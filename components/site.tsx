@@ -3,9 +3,9 @@
 import { useState } from "react"
 import Link from "next/link"
 
-import { WA_LINK, PHONE, PHONE_DISPLAY, EMAIL, waHref } from "@/lib/contact"
+import { WA_LINK, PHONE, PHONE_DISPLAY, EMAIL, waHref, TIKTOK, TIKTOK_HANDLE, INSTAGRAM, INSTAGRAM_HANDLE } from "@/lib/contact"
 
-export { WA_LINK, PHONE, PHONE_DISPLAY, EMAIL, waHref }
+export { WA_LINK, PHONE, PHONE_DISPLAY, EMAIL, waHref, TIKTOK, TIKTOK_HANDLE, INSTAGRAM, INSTAGRAM_HANDLE }
 
 export function WhatsAppIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -27,6 +27,24 @@ export function CamIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
       <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4h8A2.5 2.5 0 0 1 16 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-8A2.5 2.5 0 0 1 3 17.5v-11Zm15 3.2 4.4-2.6a1 1 0 0 1 1.6.9v8a1 1 0 0 1-1.6.9L18 14.3V9.7Z" />
+    </svg>
+  )
+}
+
+export function TikTokIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M16.5 3c.3 2.1 1.5 3.4 3.5 3.6v2.3c-1.2.1-2.3-.3-3.5-1v5.5c0 4.6-3.6 6.8-6.7 5.6a4.9 4.9 0 0 1-3-5.9 4.9 4.9 0 0 1 5.6-3.6v2.5c-.4-.1-.8-.2-1.2-.2a2.4 2.4 0 0 0-.5 4.7c1.4.3 2.7-.6 2.7-2.1V3h2.6Z" />
+    </svg>
+  )
+}
+
+export function InstagramIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none" />
     </svg>
   )
 }
@@ -193,6 +211,26 @@ export function Footer() {
             <li>
               <a href={`mailto:${EMAIL}`} className="hover:text-white">
                 {EMAIL}
+              </a>
+            </li>
+            <li className="flex items-center gap-4 pt-2">
+              <a
+                href={TIKTOK}
+                target="_blank"
+                rel="noopener"
+                aria-label={`TikTok ${TIKTOK_HANDLE}`}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 transition hover:border-white/40 hover:text-white"
+              >
+                <TikTokIcon className="h-4 w-4" />
+              </a>
+              <a
+                href={INSTAGRAM}
+                target="_blank"
+                rel="noopener"
+                aria-label={`Instagram ${INSTAGRAM_HANDLE}`}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 transition hover:border-white/40 hover:text-white"
+              >
+                <InstagramIcon className="h-4 w-4" />
               </a>
             </li>
           </ul>
