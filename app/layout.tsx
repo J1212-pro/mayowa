@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Archivo_Black } from "next/font/google";
 import { NewsletterPopup } from "@/components/newsletter-popup";
+import { Analytics } from "@/components/analytics";
 import { SITE_URL, SITE_NAME, SITE_TITLE, SITE_DESCRIPTION, SITE_KEYWORDS } from "@/lib/site";
 import "./globals.css";
 
@@ -63,6 +64,7 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col bg-black font-sans text-white">
         {children}
         <NewsletterPopup />
+        <Analytics />
       </body>
     </html>
   );
