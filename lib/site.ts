@@ -1,6 +1,6 @@
 // Central site config for SEO. Set NEXT_PUBLIC_SITE_URL in your host (Vercel)
 // to your live domain, e.g. https://mayowa.com — no trailing slash.
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://mayowa.online").replace(/\/$/, "")
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://mayowaai.online").replace(/\/$/, "")
 
 export const SITE_NAME = "MAYOWA"
 export const SITE_TITLE = "MAYOWA — AI UGC Studio"
