@@ -38,14 +38,12 @@ export function NewsletterPopup() {
     const data = new FormData(form)
     setStatus("sending")
     try {
-      const res = await fetch("https://formsubmit.co/ajax/mayowaaiagent@gmail.com", {
+      const res = await fetch("/api/newsletter", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.get("name"),
           email: data.get("email"),
-          _subject: "New newsletter signup — MAYOWA website",
-          _template: "table",
         }),
       })
       if (!res.ok) throw new Error(String(res.status))

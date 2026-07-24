@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Logo } from "@/components/site"
 import type { Video, Product } from "@/lib/media"
@@ -22,6 +22,14 @@ export function AdminPanel({ videos, products }: { videos: Video[]; products: Pr
   const videoInput = useRef<HTMLInputElement>(null)
   const imageInput = useRef<HTMLInputElement>(null)
   const [product, setProduct] = useState("")
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch("/api/admin/subscribers")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setSubscriberCount(data?.total ?? 0))
+      .catch(() => setSubscriberCount(0))
+  }, [])
 
   const report = (text: string) => {
     setMsg(text)
@@ -110,6 +118,24 @@ export function AdminPanel({ videos, products }: { videos: Video[]; products: Pr
       )}
 
       <div className="space-y-6">
+        <Section
+          title="Newsletter subscribers"
+          hint="Everyone who joins the newsletter on the website is saved here. Download the list as a spreadsheet that opens in Excel."
+        >
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-sm text-neutral-600">
+              {subscriberCount === null ? "Counting…" : `${subscriberCount} subscriber${subscriberCount === 1 ? "" : "s"}`}
+            </span>
+            <a
+              href="/api/admin/subscribers?format=csv"
+              download
+              className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Download Excel (CSV)
+            </a>
+          </div>
+        </Section>
+
         <Section
           title="Portfolio videos"
           hint="Upload 9:16 UGC videos (.mp4, .webm, .mov). The filename becomes the on-screen tag — name the file what you want visitors to read."

@@ -11,6 +11,7 @@
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.77",
     "@react-three/fiber": "^9.6.1",
+    "@vercel/blob": "^2.6.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
     "next": "16.2.10",
