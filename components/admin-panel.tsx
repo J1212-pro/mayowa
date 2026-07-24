@@ -52,10 +52,14 @@ export function AdminPanel({ videos, products }: { videos: Video[]; products: Pr
     for (const f of input.files) form.append("files", f)
     try {
       const res = await fetch("/api/admin/upload", { method: "POST", body: form })
+      if (res.status === 413) {
+        throw new Error("Files too large for live upload — keep each batch under ~4 MB, or upload from your computer.")
+      }
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Upload failed.")
       const parts = [`Saved ${data.saved.length} file(s).`]
       if (data.rejected?.length) parts.push(`Rejected: ${data.rejected.join(", ")}`)
+      if (data.github && data.saved.length) parts.push("The site updates in about 2 minutes.")
       report(parts.join(" "))
       input.value = ""
       router.refresh()
@@ -77,7 +81,7 @@ export function AdminPanel({ videos, products }: { videos: Video[]; products: Pr
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Delete failed.")
-      report(`Deleted ${name}.`)
+      report(data.github ? `Deleted ${name}. The site updates in about 2 minutes.` : `Deleted ${name}.`)
       router.refresh()
     } catch (err) {
       report(err instanceof Error ? err.message : "Delete failed.")
