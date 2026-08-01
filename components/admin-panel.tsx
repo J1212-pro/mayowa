@@ -95,6 +95,22 @@ export function AdminPanel({ videos, products }: { videos: Video[]; products: Pr
     router.refresh()
   }
 
+  const generateBlogPost = async () => {
+    if (!confirm("Write and publish a new AI blog post now? This takes a minute or two.")) return
+    setBusy(true)
+    report("Writing the post — this can take a minute or two, don't close the page…")
+    try {
+      const res = await fetch("/api/admin/blog-generate", { method: "POST" })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || "Generation failed.")
+      report(`Published: "${data.title}". The live site updates in about 2 minutes.`)
+    } catch (err) {
+      report(err instanceof Error ? err.message : "Generation failed.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="mx-auto min-h-screen max-w-4xl px-4 py-10 sm:px-6">
       <div className="mb-8 flex items-center justify-between">
@@ -137,6 +153,24 @@ export function AdminPanel({ videos, products }: { videos: Video[]; products: Pr
             >
               Download Excel (CSV)
             </a>
+          </div>
+        </Section>
+
+        <Section
+          title="Auto blog"
+          hint="A new post is written and published automatically every Monday. Use the button to publish one right now."
+        >
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="/blog" target="_blank" className="text-sm text-neutral-600 underline hover:text-neutral-950">
+              View the blog
+            </a>
+            <button
+              onClick={generateBlogPost}
+              disabled={busy}
+              className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {busy ? "Working…" : "Write a post now"}
+            </button>
           </div>
         </Section>
 

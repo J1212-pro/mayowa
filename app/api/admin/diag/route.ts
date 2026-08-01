@@ -18,5 +18,6 @@ export async function GET() {
     adminPasswordSet: !!process.env.ADMIN_PASSWORD,
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "(not set — using built-in default)",
     gaConfigured: !!process.env.NEXT_PUBLIC_GA_ID,
+    autoBlogConfigured: !!process.env.ANTHROPIC_API_KEY,
   })
 }

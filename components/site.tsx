@@ -69,6 +69,7 @@ export function Nav({ active }: { active?: "portfolio" | "images" }) {
     { href: "/portfolio", label: "Portfolio", current: active === "portfolio" },
     { href: "/portfolio#images", label: "AI Images", current: false },
     { href: "/#how", label: "How it works", current: false },
+    { href: "/blog", label: "Blog", current: false },
   ]
 
   return (
