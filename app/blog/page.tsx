@@ -14,8 +14,8 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
 }
 
-export default function BlogPage() {
-  const posts = listPosts()
+export default async function BlogPage() {
+  const posts = await listPosts()
 
   return (
     <div className="flex-1">

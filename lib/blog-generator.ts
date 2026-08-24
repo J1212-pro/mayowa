@@ -52,7 +52,7 @@ export async function generatePost(): Promise<BlogPost> {
 
   const client = new Anthropic()
   const trends = await fetchTrendingTopics()
-  const existingTitles = listPosts().map((p) => p.title)
+  const existingTitles = (await listPosts()).map((p) => p.title)
 
   const prompt = `You write the weekly blog for MAYOWA (mayowaai.online), an AI content studio that sells three services: AI UGC video creation (creator-style ads without creators), AI product image generation (product shots without photoshoots), and website design. Audience: small business owners, e-commerce brands, and marketers who want more content with less budget.
 
@@ -106,7 +106,16 @@ Tone: confident, plain-spoken, zero corporate filler. Short paragraphs. End the 
 
 async function savePost(post: BlogPost): Promise<void> {
   const json = JSON.stringify(post, null, 2)
-  if (useGithubStorage()) {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    // Blob store: post is live immediately, no redeploy needed.
+    const { put } = await import("@vercel/blob")
+    await put(`blog/${post.slug}.json`, json, {
+      access: "public",
+      contentType: "application/json",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    })
+  } else if (useGithubStorage()) {
     await githubPutFile(`public/blog/${post.slug}.json`, Buffer.from(json), `Auto blog: ${post.title}`)
   } else {
     fs.mkdirSync(blogDir(), { recursive: true })

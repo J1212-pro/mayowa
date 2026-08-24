@@ -17,5 +17,6 @@ export default async function AdminPage() {
     return <AdminLogin />
   }
 
-  return <AdminPanel videos={listVideos()} products={loadProducts()} />
+  const [videos, products] = await Promise.all([listVideos(), loadProducts()])
+  return <AdminPanel videos={videos} products={products} blobEnabled={!!process.env.BLOB_READ_WRITE_TOKEN} />
 }

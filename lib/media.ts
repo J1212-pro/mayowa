@@ -17,13 +17,34 @@ export function imagesDir() {
   return path.join(PUBLIC(), "images")
 }
 
-export function listVideos(): Video[] {
+export function hasBlobStore(): boolean {
+  return !!process.env.BLOB_READ_WRITE_TOKEN
+}
+
+/** All blobs under a prefix (Vercel Blob store), empty when not configured. */
+export async function listBlobs(prefix: string): Promise<{ pathname: string; url: string }[]> {
+  if (!hasBlobStore()) return []
+  try {
+    const { list } = await import("@vercel/blob")
+    const out: { pathname: string; url: string }[] = []
+    let cursor: string | undefined
+    do {
+      const res = await list({ prefix, cursor, limit: 1000 })
+      out.push(...res.blobs.map((b) => ({ pathname: b.pathname, url: b.url })))
+      cursor = res.hasMore ? res.cursor : undefined
+    } while (cursor)
+    return out
+  } catch {
+    return []
+  }
+}
+
+function localVideos(): Video[] {
   const dir = videosDir()
   if (!fs.existsSync(dir)) return []
   return fs
     .readdirSync(dir)
     .filter((f) => VIDEO_EXTS.has(path.extname(f).toLowerCase()))
-    .sort((a, b) => a.localeCompare(b))
     .map((f) => ({
       file: f,
       src: "/portfolio/" + encodeURIComponent(f),
@@ -31,7 +52,19 @@ export function listVideos(): Video[] {
     }))
 }
 
-export function loadProducts(): Product[] {
+export async function listVideos(): Promise<Video[]> {
+  const merged = new Map<string, Video>()
+  for (const v of localVideos()) merged.set(v.file.toLowerCase(), v)
+  for (const b of await listBlobs("portfolio/")) {
+    const file = b.pathname.slice("portfolio/".length)
+    if (!file || file.includes("/")) continue
+    if (!VIDEO_EXTS.has(path.extname(file).toLowerCase())) continue
+    merged.set(file.toLowerCase(), { file, src: b.url, tag: path.parse(file).name })
+  }
+  return [...merged.values()].sort((a, b) => a.file.localeCompare(b.file))
+}
+
+function localProducts(): Product[] {
   const root = imagesDir()
   if (!fs.existsSync(root)) return []
   return fs
@@ -46,6 +79,32 @@ export function loadProducts(): Product[] {
       return { name: dir.name, images }
     })
     .filter((product) => product.images.length > 0)
+}
+
+export async function loadProducts(): Promise<Product[]> {
+  const merged = new Map<string, Product>()
+  for (const p of localProducts()) merged.set(p.name.toLowerCase(), { ...p })
+
+  for (const b of await listBlobs("images/")) {
+    const rest = b.pathname.slice("images/".length)
+    const slash = rest.indexOf("/")
+    if (slash <= 0) continue
+    const productName = rest.slice(0, slash)
+    const file = rest.slice(slash + 1)
+    if (!file || file.includes("/")) continue
+    if (!IMAGE_EXTS.has(path.extname(file).toLowerCase())) continue
+    const key = productName.toLowerCase()
+    const existing = merged.get(key)
+    if (existing) {
+      if (!existing.images.includes(b.url)) existing.images.push(b.url)
+    } else {
+      merged.set(key, { name: productName, images: [b.url] })
+    }
+  }
+
+  return [...merged.values()]
+    .filter((p) => p.images.length > 0)
+    .sort((a, b) => a.name.localeCompare(b.name))
 }
 
 /** Strip anything dangerous from a user-supplied file or folder name. */

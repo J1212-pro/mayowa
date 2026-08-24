@@ -2,8 +2,17 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { upload as blobUpload } from "@vercel/blob/client"
 import { Logo } from "@/components/site"
 import type { Video, Product } from "@/lib/media"
+
+const VIDEO_EXT_LIST = [".mp4", ".webm", ".mov", ".m4v"]
+const IMAGE_EXT_LIST = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]
+
+function extOk(name: string, allowed: string[]) {
+  const dot = name.lastIndexOf(".")
+  return dot >= 0 && allowed.includes(name.slice(dot).toLowerCase())
+}
 
 function Section({ title, hint, children }: { title: string; hint: string; children: React.ReactNode }) {
   return (
@@ -15,7 +24,15 @@ function Section({ title, hint, children }: { title: string; hint: string; child
   )
 }
 
-export function AdminPanel({ videos, products }: { videos: Video[]; products: Product[] }) {
+export function AdminPanel({
+  videos,
+  products,
+  blobEnabled,
+}: {
+  videos: Video[]
+  products: Product[]
+  blobEnabled: boolean
+}) {
   const router = useRouter()
   const [msg, setMsg] = useState("")
   const [busy, setBusy] = useState(false)
@@ -46,6 +63,44 @@ export function AdminPanel({ videos, products }: { videos: Video[]; products: Pr
       return
     }
     setBusy(true)
+
+    // Direct browser -> storage upload: no server size limit, media is live instantly.
+    if (blobEnabled) {
+      const allowed = kind === "video" ? VIDEO_EXT_LIST : IMAGE_EXT_LIST
+      const folder = kind === "video" ? "portfolio" : `images/${product.trim()}`
+      const saved: string[] = []
+      const rejected: string[] = []
+      const files = [...input.files]
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i]
+          if (!extOk(f.name, allowed)) {
+            rejected.push(`${f.name} (type not allowed)`)
+            continue
+          }
+          setMsg(`Uploading ${i + 1} of ${files.length}: ${f.name}…`)
+          try {
+            await blobUpload(`${folder}/${f.name}`, f, {
+              access: "public",
+              handleUploadUrl: "/api/admin/blob-upload",
+            })
+            saved.push(f.name)
+          } catch (err) {
+            rejected.push(`${f.name} (${err instanceof Error ? err.message : "failed"})`)
+          }
+        }
+        const parts = [`Saved ${saved.length} file(s) — live on the site now.`]
+        if (rejected.length) parts.push(`Rejected: ${rejected.join(", ")}`)
+        report(parts.join(" "))
+        input.value = ""
+        router.refresh()
+      } finally {
+        setBusy(false)
+      }
+      return
+    }
+
+    // Fallback (local development): send through the server route.
     const form = new FormData()
     form.set("kind", kind)
     if (kind === "image") form.set("product", product.trim())

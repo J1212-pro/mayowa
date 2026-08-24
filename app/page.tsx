@@ -75,8 +75,8 @@ function ServiceIcon({ kind }: { kind: string }) {
   )
 }
 
-export default function Home() {
-  const videos = listVideos()
+export default async function Home() {
+  const videos = await listVideos()
   const teaser = videos.slice(0, 3)
   return (
     <div className="flex-1">

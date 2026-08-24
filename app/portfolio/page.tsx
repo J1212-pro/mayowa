@@ -11,9 +11,8 @@ export const metadata = {
     "AI UGC videos and AI-generated product imagery by MAYOWA — no cameras, no sets, no creators. Watch the work.",
 }
 
-export default function PortfolioPage() {
-  const products = loadProducts()
-  const videos = listVideos()
+export default async function PortfolioPage() {
+  const [products, videos] = await Promise.all([loadProducts(), listVideos()])
 
   return (
     <div className="flex-1">
