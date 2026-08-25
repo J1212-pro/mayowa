@@ -106,6 +106,79 @@ export function descriptionFromHtml(html: string): string {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160)
 }
 
+// ---- Trash: deleted posts are parked here so they can be restored ----
+
+function localTrashDir() {
+  return path.join(process.cwd(), ".data", "blog-trash")
+}
+
+export async function trashPost(post: BlogPost): Promise<void> {
+  const json = JSON.stringify(post, null, 2)
+  if (hasBlobStore()) {
+    const { put } = await import("@vercel/blob")
+    await put(`trash/blog/${post.slug}.json`, json, {
+      access: "public",
+      contentType: "application/json",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    })
+  } else {
+    fs.mkdirSync(localTrashDir(), { recursive: true })
+    fs.writeFileSync(path.join(localTrashDir(), `${post.slug}.json`), json)
+  }
+}
+
+export async function listTrashedPosts(): Promise<BlogPost[]> {
+  const posts: BlogPost[] = []
+  if (hasBlobStore()) {
+    const blobs = (await listBlobs("trash/blog/")).filter((b) => b.pathname.endsWith(".json"))
+    for (const b of blobs) {
+      try {
+        const res = await fetch(b.url, { cache: "no-store" })
+        if (!res.ok) continue
+        const post = await res.json()
+        if (isPost(post)) posts.push(post)
+      } catch {
+        // skip unreadable entries
+      }
+    }
+  }
+  const dir = localTrashDir()
+  if (fs.existsSync(dir)) {
+    for (const f of fs.readdirSync(dir).filter((f) => f.endsWith(".json"))) {
+      try {
+        const post = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"))
+        if (isPost(post) && !posts.some((p) => p.slug === post.slug)) posts.push(post)
+      } catch {
+        // skip unreadable entries
+      }
+    }
+  }
+  return posts.sort((a, b) => b.date.localeCompare(a.date))
+}
+
+/** Bring a trashed post back to the live blog. */
+export async function restorePost(slug: string): Promise<BlogPost | null> {
+  const post = (await listTrashedPosts()).find((p) => p.slug === slug)
+  if (!post) return null
+  await savePost(post)
+  // Remove the trash copy (best effort — the post is already restored).
+  try {
+    if (hasBlobStore()) {
+      const match = (await listBlobs("trash/blog/")).find((b) => b.pathname === `trash/blog/${slug}.json`)
+      if (match) {
+        const { del } = await import("@vercel/blob")
+        await del(match.url)
+      }
+    }
+    const localFile = path.join(localTrashDir(), `${slug}.json`)
+    if (fs.existsSync(localFile)) fs.rmSync(localFile, { force: true })
+  } catch {
+    // ignore — a stale trash copy is harmless
+  }
+  return post
+}
+
 export function slugify(title: string): string {
   return title
     .toLowerCase()

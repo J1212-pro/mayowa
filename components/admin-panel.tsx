@@ -29,11 +29,13 @@ export function AdminPanel({
   videos,
   products,
   posts,
+  trashedPosts,
   blobEnabled,
 }: {
   videos: Video[]
   products: Product[]
   posts: BlogPost[]
+  trashedPosts: BlogPost[]
   blobEnabled: boolean
 }) {
   const router = useRouter()
@@ -242,8 +244,27 @@ export function AdminPanel({
     }
   }
 
+  const restoreBlogPost = async (post: BlogPost) => {
+    setBusy(true)
+    try {
+      const res = await fetch("/api/admin/blog-restore", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: post.slug }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || "Restore failed.")
+      report(`Restored "${data.title}" — it's back on the blog.`)
+      router.refresh()
+    } catch (err) {
+      report(err instanceof Error ? err.message : "Restore failed.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const deleteBlogPost = async (post: BlogPost) => {
-    if (!confirm(`Delete the post "${post.title}"? This cannot be undone.`)) return
+    if (!confirm(`Delete the post "${post.title}"? You can restore it from "Recently deleted" if you change your mind.`)) return
     setBusy(true)
     try {
       const res = await fetch("/api/admin/blog-delete", {
@@ -440,6 +461,26 @@ export function AdminPanel({
             ))}
             {posts.length === 0 && <li className="py-2.5 text-sm text-neutral-400">No posts yet.</li>}
           </ul>
+
+          {trashedPosts.length > 0 && (
+            <div className="mt-6">
+              <p className="text-sm font-semibold text-neutral-500">Recently deleted</p>
+              <ul className="mt-2 divide-y divide-neutral-200 border-t border-neutral-200">
+                {trashedPosts.map((p) => (
+                  <li key={p.slug} className="flex items-center justify-between gap-3 py-2.5 text-sm text-neutral-500">
+                    <span className="min-w-0 truncate">{p.title}</span>
+                    <button
+                      onClick={() => restoreBlogPost(p)}
+                      disabled={busy}
+                      className="shrink-0 text-xs font-semibold text-neutral-950 hover:underline disabled:opacity-60"
+                    >
+                      Restore
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </Section>
 
         <Section

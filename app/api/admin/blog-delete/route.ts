@@ -3,7 +3,7 @@ import path from "path"
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { isAdmin } from "@/lib/admin"
-import { blogDir } from "@/lib/blog"
+import { blogDir, getPost, trashPost } from "@/lib/blog"
 import { hasBlobStore, listBlobs } from "@/lib/media"
 
 export async function POST(req: Request) {
@@ -15,6 +15,16 @@ export async function POST(req: Request) {
   const slug = typeof body?.slug === "string" ? body.slug.trim() : ""
   if (!/^[a-z0-9-]+$/.test(slug)) {
     return NextResponse.json({ error: "Invalid post." }, { status: 400 })
+  }
+
+  // Park a copy in the trash first so the delete can be undone from the panel.
+  const current = await getPost(slug)
+  if (current) {
+    try {
+      await trashPost(current)
+    } catch {
+      return NextResponse.json({ error: "Could not back the post up before deleting — nothing was deleted." }, { status: 500 })
+    }
   }
 
   let deletedBlob = false
