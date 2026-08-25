@@ -88,6 +88,24 @@ export async function savePost(post: BlogPost): Promise<void> {
   }
 }
 
+/** Editor/pasted content -> post HTML. HTML passes through; plain text becomes paragraphs. */
+export function contentToHtml(content: string): string {
+  const looksLikeHtml = /<\s*(p|h2|h3|ul|ol|li|blockquote|strong|em|br|b|i|a|div)[\s>/]/i.test(content)
+  if (looksLikeHtml) return content
+  const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  return content
+    .split(/\r?\n\s*\r?\n/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => `<p>${escape(block).replace(/\r?\n/g, "<br />")}</p>`)
+    .join("\n")
+}
+
+/** Fallback meta description from post HTML. */
+export function descriptionFromHtml(html: string): string {
+  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160)
+}
+
 export function slugify(title: string): string {
   return title
     .toLowerCase()

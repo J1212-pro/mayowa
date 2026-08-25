@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { upload as blobUpload } from "@vercel/blob/client"
 import { Logo } from "@/components/site"
 import type { Video, Product } from "@/lib/media"
+import type { BlogPost } from "@/lib/blog"
 
 const VIDEO_EXT_LIST = [".mp4", ".webm", ".mov", ".m4v"]
 const IMAGE_EXT_LIST = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]
@@ -27,10 +28,12 @@ function Section({ title, hint, children }: { title: string; hint: string; child
 export function AdminPanel({
   videos,
   products,
+  posts,
   blobEnabled,
 }: {
   videos: Video[]
   products: Product[]
+  posts: BlogPost[]
   blobEnabled: boolean
 }) {
   const router = useRouter()
@@ -195,7 +198,25 @@ export function AdminPanel({
     document.execCommand("insertText", false, e.clipboardData.getData("text/plain"))
   }
 
-  const createBlogPost = async () => {
+  const [editingSlug, setEditingSlug] = useState<string | null>(null)
+  const blogFormRef = useRef<HTMLDivElement>(null)
+
+  const clearBlogForm = () => {
+    setPostTitle("")
+    setPostTags("")
+    setEditingSlug(null)
+    if (editorRef.current) editorRef.current.innerHTML = ""
+  }
+
+  const startEditingPost = (post: BlogPost) => {
+    setPostTitle(post.title)
+    setPostTags(post.tags.join(", "))
+    setEditingSlug(post.slug)
+    if (editorRef.current) editorRef.current.innerHTML = post.html
+    blogFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  const saveBlogPost = async () => {
     const html = editorRef.current?.innerHTML ?? ""
     const plain = editorRef.current?.textContent?.trim() ?? ""
     if (!postTitle.trim() || !plain) {
@@ -204,20 +225,39 @@ export function AdminPanel({
     }
     setBusy(true)
     try {
-      const res = await fetch("/api/admin/blog-create", {
+      const res = await fetch(editingSlug ? "/api/admin/blog-update" : "/api/admin/blog-create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: postTitle, tags: postTags, content: html }),
+        body: JSON.stringify({ slug: editingSlug ?? undefined, title: postTitle, tags: postTags, content: html }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Publishing failed.")
-      report(`Published: "${data.title}" — live on the blog now.`)
-      setPostTitle("")
-      setPostTags("")
-      if (editorRef.current) editorRef.current.innerHTML = ""
+      report(editingSlug ? `Updated: "${data.title}" — the changes are live.` : `Published: "${data.title}" — live on the blog now.`)
+      clearBlogForm()
       router.refresh()
     } catch (err) {
       report(err instanceof Error ? err.message : "Publishing failed.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const deleteBlogPost = async (post: BlogPost) => {
+    if (!confirm(`Delete the post "${post.title}"? This cannot be undone.`)) return
+    setBusy(true)
+    try {
+      const res = await fetch("/api/admin/blog-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: post.slug }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || "Delete failed.")
+      report(data.note || `Deleted "${post.title}".`)
+      if (editingSlug === post.slug) clearBlogForm()
+      router.refresh()
+    } catch (err) {
+      report(err instanceof Error ? err.message : "Delete failed.")
     } finally {
       setBusy(false)
     }
@@ -287,8 +327,10 @@ export function AdminPanel({
             </button>
           </div>
 
-          <div className="mt-6 space-y-3 border-t border-neutral-200 pt-5">
-            <p className="text-sm font-semibold">Write your own post</p>
+          <div ref={blogFormRef} className="mt-6 space-y-3 border-t border-neutral-200 pt-5">
+            <p className="text-sm font-semibold">
+              {editingSlug ? "Editing: change the post below, then save" : "Write your own post"}
+            </p>
             <input
               value={postTitle}
               onChange={(e) => setPostTitle(e.target.value)}
@@ -342,14 +384,62 @@ export function AdminPanel({
               data-placeholder="Write your post here. Select text and use the buttons above to style it."
               className="min-h-52 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30 empty:before:text-neutral-400 empty:before:content-[attr(data-placeholder)] [&_a]:text-brand [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-brand [&_blockquote]:pl-3 [&_blockquote]:italic [&_h2]:my-2 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:my-1.5 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_p]:my-1.5 [&_ul]:list-disc"
             />
-            <button
-              onClick={createBlogPost}
-              disabled={busy}
-              className="rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-            >
-              {busy ? "Working…" : "Publish post"}
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={saveBlogPost}
+                disabled={busy}
+                className="rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {busy ? "Working…" : editingSlug ? "Save changes" : "Publish post"}
+              </button>
+              {editingSlug && (
+                <button
+                  onClick={clearBlogForm}
+                  disabled={busy}
+                  className="rounded-full border border-neutral-300 px-5 py-2.5 text-sm font-semibold text-neutral-700 disabled:opacity-60"
+                >
+                  Cancel editing
+                </button>
+              )}
+            </div>
           </div>
+
+          <ul className="mt-6 divide-y divide-neutral-200 border-t border-neutral-200">
+            {posts.map((p) => (
+              <li key={p.slug} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="min-w-0 truncate">
+                  {p.title}{" "}
+                  <span className="text-neutral-400">
+                    — {new Date(p.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-3">
+                  <a
+                    href={`/blog/${p.slug}`}
+                    target="_blank"
+                    className="text-xs font-semibold text-neutral-500 hover:underline"
+                  >
+                    View
+                  </a>
+                  <button
+                    onClick={() => startEditingPost(p)}
+                    disabled={busy}
+                    className="text-xs font-semibold text-neutral-950 hover:underline disabled:opacity-60"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteBlogPost(p)}
+                    disabled={busy}
+                    className="text-xs font-semibold text-red-600 hover:underline disabled:opacity-60"
+                  >
+                    Delete
+                  </button>
+                </span>
+              </li>
+            ))}
+            {posts.length === 0 && <li className="py-2.5 text-sm text-neutral-400">No posts yet.</li>}
+          </ul>
         </Section>
 
         <Section

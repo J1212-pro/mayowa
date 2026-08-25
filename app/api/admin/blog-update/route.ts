@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { isAdmin } from "@/lib/admin"
-import { getPost, savePost, slugify, contentToHtml, descriptionFromHtml, type BlogPost } from "@/lib/blog"
+import { getPost, savePost, contentToHtml, descriptionFromHtml, type BlogPost } from "@/lib/blog"
 
-// Manual post creation from the admin panel.
+// Edit an existing post. The slug (web address) and publish date stay the same.
 export async function POST(req: Request) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 })
   }
 
   const body = await req.json().catch(() => null)
+  const slug = typeof body?.slug === "string" ? body.slug.trim() : ""
   const title = typeof body?.title === "string" ? body.title.trim() : ""
   const content = typeof body?.content === "string" ? body.content.trim() : ""
   const tags =
@@ -21,6 +22,13 @@ export async function POST(req: Request) {
           .slice(0, 5)
       : []
 
+  if (!/^[a-z0-9-]+$/.test(slug)) {
+    return NextResponse.json({ error: "Invalid post." }, { status: 400 })
+  }
+  const existing = await getPost(slug)
+  if (!existing) {
+    return NextResponse.json({ error: "This post no longer exists." }, { status: 404 })
+  }
   if (!title || title.length > 120) {
     return NextResponse.json({ error: "Enter a title (up to 120 characters)." }, { status: 400 })
   }
@@ -28,20 +36,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "The post content is too short — write at least a few sentences." }, { status: 400 })
   }
 
-  const slug = slugify(title)
-  if (!slug) {
-    return NextResponse.json({ error: "The title needs some letters or numbers." }, { status: 400 })
-  }
-  if (await getPost(slug)) {
-    return NextResponse.json({ error: "A post with this title already exists — change the title." }, { status: 409 })
-  }
-
   const html = contentToHtml(content)
   const post: BlogPost = {
-    slug,
+    ...existing,
     title,
     description: descriptionFromHtml(html),
-    date: new Date().toISOString(),
     tags,
     html,
   }
