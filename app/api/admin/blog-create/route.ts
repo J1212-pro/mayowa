@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   }
 
   // Pasted HTML is used as-is; plain text is converted to paragraphs.
-  const looksLikeHtml = /<\s*(p|h2|h3|ul|ol|li|blockquote|strong|em|br)[\s>/]/i.test(content)
+  const looksLikeHtml = /<\s*(p|h2|h3|ul|ol|li|blockquote|strong|em|br|b|i|a|div)[\s>/]/i.test(content)
   const post: BlogPost = {
     slug,
     title,

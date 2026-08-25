@@ -172,10 +172,33 @@ export function AdminPanel({
 
   const [postTitle, setPostTitle] = useState("")
   const [postTags, setPostTags] = useState("")
-  const [postContent, setPostContent] = useState("")
+  const editorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // New blocks in the editor become <p> paragraphs instead of <div>s.
+    document.execCommand("defaultParagraphSeparator", false, "p")
+  }, [])
+
+  const format = (command: string, value?: string) => {
+    editorRef.current?.focus()
+    document.execCommand(command, false, value)
+  }
+
+  const addLink = () => {
+    const url = prompt("Link address (e.g. https://example.com):")
+    if (url) format("createLink", url)
+  }
+
+  const onEditorPaste = (e: React.ClipboardEvent) => {
+    // Paste as plain text so outside formatting junk never sneaks in.
+    e.preventDefault()
+    document.execCommand("insertText", false, e.clipboardData.getData("text/plain"))
+  }
 
   const createBlogPost = async () => {
-    if (!postTitle.trim() || !postContent.trim()) {
+    const html = editorRef.current?.innerHTML ?? ""
+    const plain = editorRef.current?.textContent?.trim() ?? ""
+    if (!postTitle.trim() || !plain) {
       report("Give the post a title and some content first.")
       return
     }
@@ -184,14 +207,14 @@ export function AdminPanel({
       const res = await fetch("/api/admin/blog-create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: postTitle, tags: postTags, content: postContent }),
+        body: JSON.stringify({ title: postTitle, tags: postTags, content: html }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Publishing failed.")
       report(`Published: "${data.title}" — live on the blog now.`)
       setPostTitle("")
       setPostTags("")
-      setPostContent("")
+      if (editorRef.current) editorRef.current.innerHTML = ""
       router.refresh()
     } catch (err) {
       report(err instanceof Error ? err.message : "Publishing failed.")
@@ -199,6 +222,8 @@ export function AdminPanel({
       setBusy(false)
     }
   }
+
+  const toolbarButton = "rounded-lg border border-neutral-300 px-2.5 py-1.5 text-xs font-semibold text-neutral-700 transition hover:border-neutral-950 hover:text-neutral-950"
 
   return (
     <div className="mx-auto min-h-screen max-w-4xl px-4 py-10 sm:px-6">
@@ -276,12 +301,46 @@ export function AdminPanel({
               placeholder="Tags, separated by commas (optional) — e.g. AI UGC, TikTok"
               className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
             />
-            <textarea
-              value={postContent}
-              onChange={(e) => setPostContent(e.target.value)}
-              placeholder="Write your post here. Leave an empty line between paragraphs — formatting is handled for you."
-              rows={8}
-              className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button type="button" onClick={() => format("formatBlock", "H2")} className={toolbarButton} title="Big heading">
+                Heading
+              </button>
+              <button type="button" onClick={() => format("formatBlock", "H3")} className={toolbarButton} title="Small heading">
+                Subheading
+              </button>
+              <button type="button" onClick={() => format("formatBlock", "P")} className={toolbarButton} title="Normal paragraph">
+                Normal
+              </button>
+              <span className="mx-1 h-5 w-px bg-neutral-300" />
+              <button type="button" onClick={() => format("bold")} className={`${toolbarButton} font-bold`} title="Bold">
+                B
+              </button>
+              <button type="button" onClick={() => format("italic")} className={`${toolbarButton} italic`} title="Italic">
+                I
+              </button>
+              <span className="mx-1 h-5 w-px bg-neutral-300" />
+              <button type="button" onClick={() => format("insertUnorderedList")} className={toolbarButton} title="Bullet list">
+                • List
+              </button>
+              <button type="button" onClick={() => format("insertOrderedList")} className={toolbarButton} title="Numbered list">
+                1. List
+              </button>
+              <button type="button" onClick={() => format("formatBlock", "BLOCKQUOTE")} className={toolbarButton} title="Quote">
+                &ldquo;Quote&rdquo;
+              </button>
+              <button type="button" onClick={addLink} className={`${toolbarButton} underline`} title="Add a link">
+                Link
+              </button>
+            </div>
+            <div
+              ref={editorRef}
+              contentEditable
+              onPaste={onEditorPaste}
+              role="textbox"
+              aria-multiline="true"
+              aria-label="Post content"
+              data-placeholder="Write your post here. Select text and use the buttons above to style it."
+              className="min-h-52 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30 empty:before:text-neutral-400 empty:before:content-[attr(data-placeholder)] [&_a]:text-brand [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-brand [&_blockquote]:pl-3 [&_blockquote]:italic [&_h2]:my-2 [&_h2]:text-xl [&_h2]:font-bold [&_h3]:my-1.5 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_p]:my-1.5 [&_ul]:list-disc"
             />
             <button
               onClick={createBlogPost}
