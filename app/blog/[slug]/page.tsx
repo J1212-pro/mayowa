@@ -5,7 +5,8 @@ import { TIKTOK, TIKTOK_HANDLE, INSTAGRAM, INSTAGRAM_HANDLE, EMAIL } from "@/lib
 import { getPost } from "@/lib/blog"
 import { SITE_URL } from "@/lib/site"
 
-export const dynamic = "force-dynamic"
+// Cached for speed; refreshed automatically when a post is published (and every 5 min).
+export const revalidate = 300
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params

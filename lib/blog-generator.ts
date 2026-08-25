@@ -1,8 +1,5 @@
-import fs from "fs"
-import path from "path"
 import Anthropic from "@anthropic-ai/sdk"
-import { listPosts, blogDir, type BlogPost } from "@/lib/blog"
-import { useGithubStorage, githubPutFile } from "@/lib/github"
+import { listPosts, savePost, type BlogPost } from "@/lib/blog"
 import { TIKTOK, INSTAGRAM, EMAIL } from "@/lib/contact"
 
 export function hasAnthropic(): boolean {
@@ -102,25 +99,6 @@ Tone: confident, plain-spoken, zero corporate filler. Short paragraphs. End the 
 
   await savePost(post)
   return post
-}
-
-async function savePost(post: BlogPost): Promise<void> {
-  const json = JSON.stringify(post, null, 2)
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    // Blob store: post is live immediately, no redeploy needed.
-    const { put } = await import("@vercel/blob")
-    await put(`blog/${post.slug}.json`, json, {
-      access: "public",
-      contentType: "application/json",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    })
-  } else if (useGithubStorage()) {
-    await githubPutFile(`public/blog/${post.slug}.json`, Buffer.from(json), `Auto blog: ${post.title}`)
-  } else {
-    fs.mkdirSync(blogDir(), { recursive: true })
-    fs.writeFileSync(path.join(blogDir(), `${post.slug}.json`), json)
-  }
 }
 
 // Social links re-exported so generated CTAs and pages stay in sync

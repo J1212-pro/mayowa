@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { generatePost, hasAnthropic } from "@/lib/blog-generator"
 
 export const maxDuration = 300
@@ -20,6 +21,7 @@ export async function GET(req: Request) {
 
   try {
     const post = await generatePost()
+    revalidatePath("/", "layout")
     return NextResponse.json({ ok: true, slug: post.slug, title: post.title })
   } catch (err) {
     return NextResponse.json(

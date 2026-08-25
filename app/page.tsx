@@ -4,7 +4,8 @@ import { HeroCharacter } from "@/components/hero-character"
 import { HeroTitle } from "@/components/hero-title"
 import { listVideos } from "@/lib/media"
 
-export const dynamic = "force-dynamic"
+// Cached for speed; refreshed automatically after admin changes (and every 5 min).
+export const revalidate = 300
 import { waHref, PHONE, PHONE_DISPLAY } from "@/lib/contact"
 import {
   Nav,

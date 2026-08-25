@@ -89,6 +89,10 @@ export function AdminPanel({
             rejected.push(`${f.name} (${err instanceof Error ? err.message : "failed"})`)
           }
         }
+        if (saved.length) {
+          // Rebuild the cached public pages so the new media shows immediately.
+          await fetch("/api/admin/revalidate", { method: "POST" }).catch(() => {})
+        }
         const parts = [`Saved ${saved.length} file(s) — live on the site now.`]
         if (rejected.length) parts.push(`Rejected: ${rejected.join(", ")}`)
         report(parts.join(" "))
@@ -158,9 +162,39 @@ export function AdminPanel({
       const res = await fetch("/api/admin/blog-generate", { method: "POST" })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Generation failed.")
-      report(`Published: "${data.title}". The live site updates in about 2 minutes.`)
+      report(`Published: "${data.title}" — live on the blog now.`)
     } catch (err) {
       report(err instanceof Error ? err.message : "Generation failed.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const [postTitle, setPostTitle] = useState("")
+  const [postTags, setPostTags] = useState("")
+  const [postContent, setPostContent] = useState("")
+
+  const createBlogPost = async () => {
+    if (!postTitle.trim() || !postContent.trim()) {
+      report("Give the post a title and some content first.")
+      return
+    }
+    setBusy(true)
+    try {
+      const res = await fetch("/api/admin/blog-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: postTitle, tags: postTags, content: postContent }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || "Publishing failed.")
+      report(`Published: "${data.title}" — live on the blog now.`)
+      setPostTitle("")
+      setPostTags("")
+      setPostContent("")
+      router.refresh()
+    } catch (err) {
+      report(err instanceof Error ? err.message : "Publishing failed.")
     } finally {
       setBusy(false)
     }
@@ -212,8 +246,8 @@ export function AdminPanel({
         </Section>
 
         <Section
-          title="Auto blog"
-          hint="A new post is written and published automatically every Monday. Use the button to publish one right now."
+          title="Blog"
+          hint="A new post is written automatically every Monday. You can also have the AI write one now, or write your own below."
         >
           <div className="flex flex-wrap items-center gap-4">
             <a href="/blog" target="_blank" className="text-sm text-neutral-600 underline hover:text-neutral-950">
@@ -224,7 +258,37 @@ export function AdminPanel({
               disabled={busy}
               className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
             >
-              {busy ? "Working…" : "Write a post now"}
+              {busy ? "Working…" : "AI: write a post now"}
+            </button>
+          </div>
+
+          <div className="mt-6 space-y-3 border-t border-neutral-200 pt-5">
+            <p className="text-sm font-semibold">Write your own post</p>
+            <input
+              value={postTitle}
+              onChange={(e) => setPostTitle(e.target.value)}
+              placeholder="Post title"
+              className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+            />
+            <input
+              value={postTags}
+              onChange={(e) => setPostTags(e.target.value)}
+              placeholder="Tags, separated by commas (optional) — e.g. AI UGC, TikTok"
+              className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+            />
+            <textarea
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+              placeholder="Write your post here. Leave an empty line between paragraphs — formatting is handled for you."
+              rows={8}
+              className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+            />
+            <button
+              onClick={createBlogPost}
+              disabled={busy}
+              className="rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {busy ? "Working…" : "Publish post"}
             </button>
           </div>
         </Section>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { isAdmin } from "@/lib/admin"
 import { generatePost, hasAnthropic } from "@/lib/blog-generator"
 
@@ -18,6 +19,7 @@ export async function POST() {
 
   try {
     const post = await generatePost()
+    revalidatePath("/", "layout")
     return NextResponse.json({ ok: true, slug: post.slug, title: post.title })
   } catch (err) {
     return NextResponse.json(

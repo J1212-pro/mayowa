@@ -46,7 +46,9 @@ async function blobPosts(): Promise<BlogPost[]> {
   const posts = await Promise.all(
     blobs.map(async (b) => {
       try {
-        const res = await fetch(b.url, { cache: "no-store" })
+        // Default caching so cached pages stay fast; on-demand revalidation
+        // (after publishing) plus the page-level revalidate keep it fresh.
+        const res = await fetch(b.url)
         if (!res.ok) return null
         const post = await res.json()
         return isPost(post) ? post : null
@@ -67,4 +69,30 @@ export async function listPosts(): Promise<BlogPost[]> {
 
 export async function getPost(slug: string): Promise<BlogPost | null> {
   return (await listPosts()).find((p) => p.slug === slug) ?? null
+}
+
+/** Publish a post: Blob store when configured (instant), else local file. */
+export async function savePost(post: BlogPost): Promise<void> {
+  const json = JSON.stringify(post, null, 2)
+  if (hasBlobStore()) {
+    const { put } = await import("@vercel/blob")
+    await put(`blog/${post.slug}.json`, json, {
+      access: "public",
+      contentType: "application/json",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    })
+  } else {
+    fs.mkdirSync(blogDir(), { recursive: true })
+    fs.writeFileSync(path.join(blogDir(), `${post.slug}.json`), json)
+  }
+}
+
+export function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60)
 }

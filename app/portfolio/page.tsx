@@ -3,7 +3,8 @@ import { VideoGrid } from "@/components/video-grid"
 import { ImageGallery } from "@/components/image-gallery"
 import { listVideos, loadProducts } from "@/lib/media"
 
-export const dynamic = "force-dynamic"
+// Cached for speed; refreshed automatically after admin changes (and every 5 min).
+export const revalidate = 300
 
 export const metadata = {
   title: "Portfolio — MAYOWA AI UGC Studio",

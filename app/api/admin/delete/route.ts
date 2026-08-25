@@ -1,5 +1,6 @@
 import fs from "fs"
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { isAdmin } from "@/lib/admin"
 import { safeName, resolveInside, videosDir, imagesDir, hasBlobStore, listBlobs } from "@/lib/media"
 import { useGithubStorage, githubDeleteFile, githubDeleteDir } from "@/lib/github"
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
 
   // Blob-stored media (direct admin uploads) — removed instantly, no redeploy.
   if (await deleteFromBlob(kind, name, productForImage)) {
+    revalidatePath("/", "layout")
     return NextResponse.json({ ok: true })
   }
 
@@ -82,5 +84,6 @@ export async function POST(req: Request) {
   }
 
   fs.rmSync(target, { recursive: kind === "product", force: true })
+  revalidatePath("/", "layout")
   return NextResponse.json({ ok: true })
 }

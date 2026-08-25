@@ -2,7 +2,8 @@ import Link from "next/link"
 import { Nav, Footer, WaFloat } from "@/components/site"
 import { listPosts } from "@/lib/blog"
 
-export const dynamic = "force-dynamic"
+// Cached for speed; refreshed automatically when a post is published (and every 5 min).
+export const revalidate = 300
 
 export const metadata = {
   title: "Blog — AI content marketing insights",
