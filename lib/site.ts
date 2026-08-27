@@ -5,7 +5,7 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://mayowaai.o
 export const SITE_NAME = "MAYOWA"
 export const SITE_TITLE = "AI UGC Videos & Product Imagery for Brands | MAYOWA"
 export const SITE_DESCRIPTION =
-  "MAYOWA makes AI UGC videos, AI product photography and brand sites — no camera, no studio, no sample shipping. First drafts back in 48 hours."
+  "MAYOWA makes AI UGC videos, AI product photography and brand sites with no camera, no studio, and no sample shipping. First drafts back in 48 hours."
 export const SITE_KEYWORDS = [
   "AI UGC",
   "AI UGC creation",

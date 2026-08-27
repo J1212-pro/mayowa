@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/site"
 export const revalidate = 300
 
 const DESCRIPTION =
-  "See AI-generated product imagery and UGC video made for clothing, beauty and consumer brands — produced entirely without a studio or a camera."
+  "See AI-generated product imagery and UGC video made for clothing, beauty and consumer brands, produced entirely without a studio or a camera."
 
 export const metadata = {
   title: "AI UGC & Product Imagery Portfolio",
@@ -35,7 +35,7 @@ export default async function PortfolioPage() {
         </span>
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Watch the work speak</h1>
         <p className="mx-auto mt-4 max-w-xl text-white/60">
-          Every video below was made without a camera, a set, or a creator. Press play — sound on recommended.
+          Every video below was made without a camera, a set, or a creator. Press play, sound on recommended.
         </p>
       </header>
 
@@ -52,7 +52,7 @@ export default async function PortfolioPage() {
             </span>
             <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">Products shot without a studio</h2>
             <p className="mt-4 text-neutral-600">
-              Every image was generated — no photographer, no samples shipped, no reshoots. Tap a product to see its
+              Every image was generated: no photographer, no samples shipped, no reshoots. Tap a product to see its
               full set.
             </p>
           </div>
@@ -62,7 +62,7 @@ export default async function PortfolioPage() {
 
       <CtaBand
         title="One brief. A month of content."
-        subtitle="Send your product and your goal on WhatsApp — a voice note works — and see first drafts in 48 hours."
+        subtitle="Send your product and your goal on WhatsApp (a voice note works) and see first drafts in 48 hours."
       />
 
       <Footer />

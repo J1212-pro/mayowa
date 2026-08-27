@@ -1,5 +1,6 @@
 import fs from "fs"
 import path from "path"
+import manifest from "./media-manifest.json"
 
 export const VIDEO_EXTS = new Set([".mp4", ".webm", ".mov", ".m4v"])
 export const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"])
@@ -41,15 +42,17 @@ export async function listBlobs(prefix: string): Promise<{ pathname: string; url
 
 function localVideos(): Video[] {
   const dir = videosDir()
-  if (!fs.existsSync(dir)) return []
-  return fs
-    .readdirSync(dir)
-    .filter((f) => VIDEO_EXTS.has(path.extname(f).toLowerCase()))
-    .map((f) => ({
-      file: f,
-      src: "/portfolio/" + encodeURIComponent(f),
-      tag: path.parse(f).name,
-    }))
+  // On Vercel the heavy media folders are excluded from the function bundle
+  // (next.config outputFileTracingExcludes), so fall back to the build-time
+  // manifest there. Locally the folder exists and stays live.
+  const files = fs.existsSync(dir)
+    ? fs.readdirSync(dir).filter((f) => VIDEO_EXTS.has(path.extname(f).toLowerCase()))
+    : manifest.videos
+  return files.map((f) => ({
+    file: f,
+    src: "/portfolio/" + encodeURIComponent(f),
+    tag: path.parse(f).name,
+  }))
 }
 
 export async function listVideos(): Promise<Video[]> {
@@ -66,18 +69,23 @@ export async function listVideos(): Promise<Video[]> {
 
 function localProducts(): Product[] {
   const root = imagesDir()
-  if (!fs.existsSync(root)) return []
-  return fs
-    .readdirSync(root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((dir) => {
-      const images = fs
-        .readdirSync(path.join(root, dir.name))
-        .filter((file) => IMAGE_EXTS.has(path.extname(file).toLowerCase()))
-        .sort()
-        .map((file) => `/images/${encodeURIComponent(dir.name)}/${encodeURIComponent(file)}`)
-      return { name: dir.name, images }
-    })
+  const entries = fs.existsSync(root)
+    ? fs
+        .readdirSync(root, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((dir) => ({
+          name: dir.name,
+          images: fs
+            .readdirSync(path.join(root, dir.name))
+            .filter((file) => IMAGE_EXTS.has(path.extname(file).toLowerCase()))
+            .sort(),
+        }))
+    : manifest.products
+  return entries
+    .map((p) => ({
+      name: p.name,
+      images: p.images.map((file) => `/images/${encodeURIComponent(p.name)}/${encodeURIComponent(file)}`),
+    }))
     .filter((product) => product.images.length > 0)
 }
 

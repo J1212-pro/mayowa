@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     try {
       await trashPost(current)
     } catch {
-      return NextResponse.json({ error: "Could not back the post up before deleting — nothing was deleted." }, { status: 500 })
+      return NextResponse.json({ error: "Could not back the post up before deleting. Nothing was deleted." }, { status: 500 })
     }
   }
 

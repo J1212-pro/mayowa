@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Keep the heavy media folders out of the serverless function bundles
+  // (Vercel caps a function at 250 MB; the videos alone exceed that).
+  // They are still served normally from the CDN as static files.
+  outputFileTracingExcludes: {
+    "*": ["./public/portfolio/**", "./public/images/**"],
+  },
   async redirects() {
     return [
       {

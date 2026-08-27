@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
   const rawContent = typeof body?.content === "string" ? body.content.trim() : ""
   if (rawContent && rawContent.length < 100) {
-    return NextResponse.json({ error: "The post content is too short — write at least a few sentences." }, { status: 400 })
+    return NextResponse.json({ error: "The post content is too short. Write at least a few sentences." }, { status: 400 })
   }
   const html = rawContent ? contentToHtml(rawContent) : existing.html
 

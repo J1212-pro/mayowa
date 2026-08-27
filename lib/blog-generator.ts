@@ -64,7 +64,7 @@ ${existingTitles.length ? `Already published (do NOT repeat these topics):\n${ex
 Internal linking (SEO): inside the body copy, naturally link once to <a href="/portfolio">the MAYOWA portfolio</a> where it supports a point, and link to ONE related earlier post from this list if any fits the topic (use the relative URL exactly as given):
 ${linkTargets.length ? linkTargets.join("\n") : "- (no earlier posts yet — portfolio link only)"}
 
-Tone: confident, plain-spoken, zero corporate filler. Short paragraphs. End the html with a brief call-to-action paragraph inviting readers to DM MAYOWA on TikTok or Instagram or email ${EMAIL} for a free content audit.`
+Tone: confident, plain-spoken, zero corporate filler. Short paragraphs. Never use the em dash character (—) anywhere in the title, description, or html; use commas, colons, or full stops instead. End the html with a brief call-to-action paragraph inviting readers to DM MAYOWA on TikTok or Instagram or email ${EMAIL} for a free content audit.`
 
   const stream = client.messages.stream({
     model: "claude-opus-5",
@@ -93,13 +93,16 @@ Tone: confident, plain-spoken, zero corporate filler. Short paragraphs. End the 
     .slice(0, 60)
     .replace(/^-+|-+$/g, "") // strip hyphens AFTER truncating so a cut never leaves one dangling
 
+  // Safety net: the site style bans em dashes in visible text.
+  const deDash = (s: string) => s.replace(/\s*—\s*/g, ", ")
+
   const post: BlogPost = {
     slug,
-    title: data.title,
-    description: data.description,
+    title: deDash(data.title),
+    description: deDash(data.description),
     date: new Date().toISOString(),
     tags: Array.isArray(data.tags) ? data.tags.slice(0, 5) : [],
-    html: data.html,
+    html: deDash(data.html),
   }
 
   await savePost(post)

@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   try {
     if (hasZoho()) {
       await sendViaZoho(
-        "New newsletter signup — MAYOWA website",
+        "New newsletter signup: MAYOWA website",
         `Name: ${name}\nEmail: ${email}\nDate: ${new Date().toISOString()}`,
       )
     } else {
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           name,
           email,
-          _subject: "New newsletter signup — MAYOWA website",
+          _subject: "New newsletter signup: MAYOWA website",
           _template: "table",
         }),
       })

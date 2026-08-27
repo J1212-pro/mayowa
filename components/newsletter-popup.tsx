@@ -97,7 +97,7 @@ export function NewsletterPopup() {
               Content ideas your competitors don&apos;t have. Free.
             </h3>
             <p className="mt-2 text-sm text-neutral-600">
-              Join the MAYOWA newsletter — AI content trends, real examples, and offers, straight to your inbox.
+              Join the MAYOWA newsletter: AI content trends, real examples, and offers, straight to your inbox.
             </p>
             <form onSubmit={submit} className="mt-6 space-y-3">
               <input

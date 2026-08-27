@@ -45,17 +45,17 @@ const services = [
   {
     icon: "video",
     title: "AI UGC Video",
-    body: "Creator-style videos for TikTok, Reels, and ads — hooks scripted, talent generated, cuts delivered ready to post. New batches every week.",
+    body: "Creator-style videos for TikTok, Reels, and ads: hooks scripted, talent generated, cuts delivered ready to post. New batches every week.",
   },
   {
     icon: "image",
     title: "AI Image Generation",
-    body: "Product heroes, campaign visuals, and brand imagery in your exact style — no studio, no shipping samples, no reshoots. 4K files, ad-ready.",
+    body: "Product heroes, campaign visuals, and brand imagery in your exact style: no studio, no shipping samples, no reshoots. 4K files, ad-ready.",
   },
   {
     icon: "web",
     title: "Website Design",
-    body: "Landing pages and full sites built to sell — mobile-first, fast to load, designed around the one action you want visitors to take.",
+    body: "Landing pages and full sites built to sell: mobile-first, fast to load, designed around the one action you want visitors to take.",
   },
 ]
 
@@ -68,7 +68,7 @@ const steps = [
   {
     n: "2",
     title: "Review first drafts in 48h",
-    body: "You get the first batch — videos, images, or page designs. Mark what you like, cut what you don't.",
+    body: "You get the first batch: videos, images, or page designs. Mark what you like, cut what you don't.",
   },
   {
     n: "3",
@@ -119,7 +119,7 @@ export default async function Home() {
             </span>
             <HeroTitle />
             <p className="mt-6 max-w-md text-lg text-white/70">
-              MAYOWA creates AI UGC videos, product imagery, and websites for brands that need to post every day —
+              MAYOWA creates AI UGC videos, product imagery, and websites for brands that need to post every day,
               without shoots, creators, or studios.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">

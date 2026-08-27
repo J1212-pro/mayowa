@@ -16,7 +16,7 @@ export async function GET() {
     zohoEmailConfigured: hasZoho(),
     githubUploadsConfigured: hasGithub(),
     adminPasswordSet: !!process.env.ADMIN_PASSWORD,
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "(not set — using built-in default)",
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "(not set, using built-in default)",
     gaConfigured: !!process.env.NEXT_PUBLIC_GA_ID,
     autoBlogConfigured: !!process.env.ANTHROPIC_API_KEY,
     directMediaUploads: !!process.env.BLOB_READ_WRITE_TOKEN,

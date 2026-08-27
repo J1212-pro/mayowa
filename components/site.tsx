@@ -236,7 +236,7 @@ export function Footer() {
             </li>
           </ul>
         </div>
-        <p className="mt-9 text-xs text-white/40">© 2026 MAYOWA — AI UGC video · Image generation · Website design</p>
+        <p className="mt-9 text-xs text-white/40">© 2026 MAYOWA · AI UGC video · Image generation · Website design</p>
       </div>
     </footer>
   )

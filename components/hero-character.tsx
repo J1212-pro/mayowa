@@ -59,7 +59,7 @@ export function HeroCharacter() {
           src={p.src}
           alt={`AI-generated brand presenter created by MAYOWA, ${
             p.key === "center" ? "facing the camera" : p.key === "left" ? "looking to the left" : "looking to the right"
-          } — no photoshoot involved`}
+          }, no photoshoot involved`}
           draggable={false}
           className={`absolute inset-0 h-full w-full select-none object-cover transition-opacity duration-300 ease-out ${
             pose === p.key ? "opacity-100" : "opacity-0"

@@ -64,7 +64,7 @@ export function AdminPanel({
       return
     }
     if (kind === "image" && !product.trim()) {
-      report("Type a product name first — it becomes the card title.")
+      report("Type a product name first. It becomes the card title.")
       return
     }
     setBusy(true)
@@ -98,7 +98,7 @@ export function AdminPanel({
           // Rebuild the cached public pages so the new media shows immediately.
           await fetch("/api/admin/revalidate", { method: "POST" }).catch(() => {})
         }
-        const parts = [`Saved ${saved.length} file(s) — live on the site now.`]
+        const parts = [`Saved ${saved.length} file(s). Live on the site now.`]
         if (rejected.length) parts.push(`Rejected: ${rejected.join(", ")}`)
         report(parts.join(" "))
         input.value = ""
@@ -117,7 +117,7 @@ export function AdminPanel({
     try {
       const res = await fetch("/api/admin/upload", { method: "POST", body: form })
       if (res.status === 413) {
-        throw new Error("Files too large for live upload — keep each batch under ~4 MB, or upload from your computer.")
+        throw new Error("Files too large for live upload. Keep each batch under ~4 MB, or upload from your computer.")
       }
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Upload failed.")
@@ -162,12 +162,12 @@ export function AdminPanel({
   const generateBlogPost = async () => {
     if (!confirm("Write and publish a new AI blog post now? This takes a minute or two.")) return
     setBusy(true)
-    report("Writing the post — this can take a minute or two, don't close the page…")
+    report("Writing the post. This can take a minute or two, don't close the page…")
     try {
       const res = await fetch("/api/admin/blog-generate", { method: "POST" })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Generation failed.")
-      report(`Published: "${data.title}" — live on the blog now.`)
+      report(`Published: "${data.title}". Live on the blog now.`)
     } catch (err) {
       report(err instanceof Error ? err.message : "Generation failed.")
     } finally {
@@ -234,7 +234,7 @@ export function AdminPanel({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Publishing failed.")
-      report(editingSlug ? `Updated: "${data.title}" — the changes are live.` : `Published: "${data.title}" — live on the blog now.`)
+      report(editingSlug ? `Updated: "${data.title}". The changes are live.` : `Published: "${data.title}". Live on the blog now.`)
       clearBlogForm()
       router.refresh()
     } catch (err) {
@@ -254,7 +254,7 @@ export function AdminPanel({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || "Restore failed.")
-      report(`Restored "${data.title}" — it's back on the blog.`)
+      report(`Restored "${data.title}". It's back on the blog.`)
       router.refresh()
     } catch (err) {
       report(err instanceof Error ? err.message : "Restore failed.")
@@ -361,7 +361,7 @@ export function AdminPanel({
             <input
               value={postTags}
               onChange={(e) => setPostTags(e.target.value)}
-              placeholder="Tags, separated by commas (optional) — e.g. AI UGC, TikTok"
+              placeholder="Tags, separated by commas (optional), e.g. AI UGC, TikTok"
               className="w-full rounded-xl border border-neutral-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
             />
             <div className="flex flex-wrap items-center gap-1.5">
@@ -485,7 +485,7 @@ export function AdminPanel({
 
         <Section
           title="Portfolio videos"
-          hint="Upload 9:16 UGC videos (.mp4, .webm, .mov). The filename becomes the on-screen tag — name the file what you want visitors to read."
+          hint="Upload 9:16 UGC videos (.mp4, .webm, .mov). The filename becomes the on-screen tag. Name the file what you want visitors to read."
         >
           <div className="flex flex-wrap items-center gap-3">
             <input

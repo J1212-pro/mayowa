@@ -38,7 +38,7 @@ export default async function BlogPage() {
         </span>
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">AI content, decoded weekly</h1>
         <p className="mx-auto mt-4 max-w-xl text-white/60">
-          What&apos;s working in AI UGC, product imagery, and content marketing — fresh every week.
+          What&apos;s working in AI UGC, product imagery, and content marketing, fresh every week.
         </p>
       </header>
 

@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
   if (!hasAnthropic()) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY is not configured — auto-blog is paused." },
+      { error: "ANTHROPIC_API_KEY is not configured. Auto-blog is paused." },
       { status: 500 },
     )
   }

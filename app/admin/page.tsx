@@ -7,7 +7,7 @@ import { AdminPanel } from "@/components/admin-panel"
 export const dynamic = "force-dynamic"
 
 export const metadata = {
-  title: "Admin — MAYOWA",
+  title: "Admin | MAYOWA",
   robots: { index: false, follow: false },
 }
 

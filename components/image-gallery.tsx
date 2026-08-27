@@ -42,7 +42,7 @@ export function ImageGallery({ products, onLight = false }: { products: Product[
           Your product galleries load from folders
         </b>
         Inside <code className="rounded bg-brand/10 px-2 py-0.5 font-mono text-sm text-brand">public/images</code>,
-        create one folder per product — the folder name becomes the product name — and drop the generated images
+        create one folder per product (the folder name becomes the product name) and drop the generated images
         inside. Refresh and they appear here.
       </div>
     )
@@ -68,7 +68,7 @@ export function ImageGallery({ products, onLight = false }: { products: Product[
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={p.images[0]}
-                alt={`AI-generated product photography for ${p.name} — studio-quality shot created without a camera`}
+                alt={`AI-generated product photography for ${p.name}, a studio-quality shot created without a camera`}
                 loading="lazy"
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
               />

@@ -1,0 +1,83 @@
+{
+  "videos": [
+    "FYNE 3X1.mp4",
+    "Football.mp4",
+    "TRE EN EN 1.mp4",
+    "Why not performing.mp4",
+    "aLEOVERA.mp4",
+    "ai or human.mp4",
+    "making ugc happens.mp4",
+    "product looks premuim.mp4",
+    "teeth CLen.mp4",
+    "website design.mp4"
+  ],
+  "products": [
+    {
+      "name": "Female Clothing Imagery",
+      "images": [
+        "photo_2026-06-05_08-37-56.jpg",
+        "photo_2026-06-05_08-37-59.jpg",
+        "photo_2026-06-05_08-38-02.jpg",
+        "photo_2026-06-05_08-38-05.jpg",
+        "photo_2026-06-05_10-54-02.jpg",
+        "photo_2026-06-05_10-54-04.jpg",
+        "photo_2026-06-05_10-54-06.jpg"
+      ]
+    },
+    {
+      "name": "Female Suit Cloth Imagery",
+      "images": [
+        "photo_2026-06-05_21-00-57.jpg",
+        "photo_2026-06-05_21-01-01.jpg",
+        "photo_2026-06-05_21-01-05.jpg",
+        "photo_2026-06-05_21-01-11.jpg",
+        "photo_2026-06-05_21-01-15.jpg"
+      ]
+    },
+    {
+      "name": "FYNE [BODY]",
+      "images": [
+        "1.jpeg",
+        "10.jpeg",
+        "11.jpeg",
+        "2.jpeg",
+        "3.jpeg",
+        "4.jpeg",
+        "5.jpeg",
+        "6.jpeg",
+        "7.jpeg",
+        "8.jpeg",
+        "9.jpeg"
+      ]
+    },
+    {
+      "name": "SACRA AI Product Imagery",
+      "images": [
+        "Amber_serum_bottle_with_dropper_202607070842.jpeg",
+        "Amber_serum_bottle_with_dropper_202607070844.jpeg",
+        "Amber_serum_bottle_with_dropper_202607070850.jpeg",
+        "Amber_serum_bottle_with_dropper_202607070855.jpeg",
+        "Serum_bottle_product_sheet_image_202607070838.jpeg"
+      ]
+    },
+    {
+      "name": "tinysock AI Product Imagery",
+      "images": [
+        "Sock_shoe_sole_texture_macro_202607080923.jpeg",
+        "Sock_shoes_on_green_floor_202607080932.jpeg",
+        "Three_sock_shoes_on_paper_202607080934.jpeg",
+        "TinySockies_Originals_colorways_._2K_202607080923.jpeg",
+        "Toddler_reaching_for_toy_outdoors_202607080923.jpeg"
+      ]
+    },
+    {
+      "name": "y2k Male Clothing Imagery",
+      "images": [
+        "_2026 Men fashion Guide _ Trendy Casual & Formal Cuts_.jpg",
+        "back_view_2K_202606180649.jpeg",
+        "i_want_image_download_-_2026-06-17T195344.781.jpg_complete_character_202606172001.jpeg_to_202606180649.jpeg",
+        "side_view_2K_202606180649.jpeg"
+      ]
+    }
+  ]
+}

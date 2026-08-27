@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Enter a title (up to 120 characters)." }, { status: 400 })
   }
   if (!content || content.length < 100) {
-    return NextResponse.json({ error: "The post content is too short — write at least a few sentences." }, { status: 400 })
+    return NextResponse.json({ error: "The post content is too short. Write at least a few sentences." }, { status: 400 })
   }
 
   const slug = slugify(title)
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "The title needs some letters or numbers." }, { status: 400 })
   }
   if (await getPost(slug)) {
-    return NextResponse.json({ error: "A post with this title already exists — change the title." }, { status: 409 })
+    return NextResponse.json({ error: "A post with this title already exists. Change the title." }, { status: 409 })
   }
 
   const html = contentToHtml(content)

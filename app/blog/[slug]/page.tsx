@@ -91,7 +91,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div className="mt-14 rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center">
           <h2 className="text-xl font-semibold">Want content like this working for your brand?</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-white/60">
-            MAYOWA makes AI UGC videos, product imagery, and websites. First drafts in 48 hours — DM us or send an
+            MAYOWA makes AI UGC videos, product imagery, and websites. First drafts in 48 hours. DM us or send an
             email.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
