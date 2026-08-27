@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        // Old truncated slug -> clean slug (permanent, for SEO)
+        source: "/blog/the-next-wave-of-ai-video-4-game-changing-trends-dominating-",
+        destination: "/blog/ai-video-trends-2026",
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {

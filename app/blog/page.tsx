@@ -1,14 +1,24 @@
 import Link from "next/link"
 import { Nav, Footer, WaFloat } from "@/components/site"
 import { listPosts } from "@/lib/blog"
+import { SITE_URL } from "@/lib/site"
 
 // Cached for speed; refreshed automatically when a post is published (and every 5 min).
 export const revalidate = 300
 
+const DESCRIPTION =
+  "Weekly breakdowns of what's working in AI UGC, AI product imagery and content marketing for brands that need to post every day."
+
 export const metadata = {
-  title: "Blog — AI content marketing insights",
-  description:
-    "Weekly insights on AI UGC, AI product imagery, and content marketing from MAYOWA — the AI content studio.",
+  title: "AI UGC & Content Marketing Blog",
+  description: DESCRIPTION,
+  alternates: { canonical: "/blog" },
+  openGraph: {
+    type: "website",
+    url: `${SITE_URL}/blog`,
+    title: "AI UGC & Content Marketing Blog | MAYOWA",
+    description: DESCRIPTION,
+  },
 }
 
 function formatDate(iso: string) {

@@ -3,10 +3,33 @@ import { ShaderBackground } from "@/components/ui/shader-background"
 import { HeroCharacter } from "@/components/hero-character"
 import { HeroTitle } from "@/components/hero-title"
 import { listVideos } from "@/lib/media"
+import { listPosts } from "@/lib/blog"
+import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/site"
 
 // Cached for speed; refreshed automatically after admin changes (and every 5 min).
 export const revalidate = 300
-import { waHref, PHONE, PHONE_DISPLAY } from "@/lib/contact"
+import { waHref, PHONE, PHONE_DISPLAY, EMAIL, TIKTOK, INSTAGRAM } from "@/lib/contact"
+
+export const metadata = {
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: `${SITE_URL}/`,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+}
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "MAYOWA",
+  alternateName: "MAYOWA AI UGC Studio",
+  url: `${SITE_URL}/`,
+  description: "AI UGC video, AI product imagery and websites for brands.",
+  email: EMAIL,
+  sameAs: [TIKTOK, INSTAGRAM],
+}
 import {
   Nav,
   Footer,
@@ -77,10 +100,12 @@ function ServiceIcon({ kind }: { kind: string }) {
 }
 
 export default async function Home() {
-  const videos = await listVideos()
+  const [videos, posts] = await Promise.all([listVideos(), listPosts()])
   const teaser = videos.slice(0, 3)
+  const latestPosts = posts.slice(0, 2)
   return (
     <div className="flex-1">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       <Nav />
 
       {/* Hero with animated shader background */}
@@ -221,6 +246,33 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* Latest from the blog */}
+      {latestPosts.length > 0 && (
+        <section className="px-6 pb-24">
+          <div className="mx-auto max-w-6xl">
+            <div className="mx-auto mb-13 max-w-xl text-center">
+              <span className="mb-5 inline-block rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold tracking-wide">
+                From The Blog
+              </span>
+              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">AI content, decoded weekly</h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {latestPosts.map((post) => (
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-7 transition hover:border-white/25 hover:bg-white/[0.06]"
+                >
+                  <h3 className="text-lg font-semibold">{post.title}</h3>
+                  <p className="mt-2 text-sm text-white/60">{post.description}</p>
+                  <span className="mt-4 inline-block text-sm font-semibold text-brand">Read the post →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <CtaBand
         title="Your competitors post every day. Now you can too."

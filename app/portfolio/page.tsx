@@ -2,14 +2,24 @@ import { Nav, Footer, WaFloat, CtaBand } from "@/components/site"
 import { VideoGrid } from "@/components/video-grid"
 import { ImageGallery } from "@/components/image-gallery"
 import { listVideos, loadProducts } from "@/lib/media"
+import { SITE_URL } from "@/lib/site"
 
 // Cached for speed; refreshed automatically after admin changes (and every 5 min).
 export const revalidate = 300
 
+const DESCRIPTION =
+  "See AI-generated product imagery and UGC video made for clothing, beauty and consumer brands — produced entirely without a studio or a camera."
+
 export const metadata = {
-  title: "Portfolio — MAYOWA AI UGC Studio",
-  description:
-    "AI UGC videos and AI-generated product imagery by MAYOWA — no cameras, no sets, no creators. Watch the work.",
+  title: "AI UGC & Product Imagery Portfolio",
+  description: DESCRIPTION,
+  alternates: { canonical: "/portfolio" },
+  openGraph: {
+    type: "website",
+    url: `${SITE_URL}/portfolio`,
+    title: "AI UGC & Product Imagery Portfolio | MAYOWA",
+    description: DESCRIPTION,
+  },
 }
 
 export default async function PortfolioPage() {

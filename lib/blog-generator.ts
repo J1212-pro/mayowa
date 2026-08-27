@@ -49,7 +49,9 @@ export async function generatePost(): Promise<BlogPost> {
 
   const client = new Anthropic()
   const trends = await fetchTrendingTopics()
-  const existingTitles = (await listPosts()).map((p) => p.title)
+  const existing = await listPosts()
+  const existingTitles = existing.map((p) => p.title)
+  const linkTargets = existing.slice(0, 5).map((p) => `- /blog/${p.slug} ("${p.title}")`)
 
   const prompt = `You write the weekly blog for MAYOWA (mayowaai.online), an AI content studio that sells three services: AI UGC video creation (creator-style ads without creators), AI product image generation (product shots without photoshoots), and website design. Audience: small business owners, e-commerce brands, and marketers who want more content with less budget.
 
@@ -58,6 +60,9 @@ Write one blog post that connects something currently relevant to the value of A
 ${trends.length ? `Today's trending searches on Google (pick ONE only if it can be tied naturally to marketing/content/AI — otherwise ignore them and choose an evergreen angle):\n${trends.map((t) => `- ${t}`).join("\n")}` : "No trend data available — choose a strong evergreen angle about AI content marketing."}
 
 ${existingTitles.length ? `Already published (do NOT repeat these topics):\n${existingTitles.map((t) => `- ${t}`).join("\n")}` : ""}
+
+Internal linking (SEO): inside the body copy, naturally link once to <a href="/portfolio">the MAYOWA portfolio</a> where it supports a point, and link to ONE related earlier post from this list if any fits the topic (use the relative URL exactly as given):
+${linkTargets.length ? linkTargets.join("\n") : "- (no earlier posts yet — portfolio link only)"}
 
 Tone: confident, plain-spoken, zero corporate filler. Short paragraphs. End the html with a brief call-to-action paragraph inviting readers to DM MAYOWA on TikTok or Instagram or email ${EMAIL} for a free content audit.`
 
@@ -85,8 +90,8 @@ Tone: confident, plain-spoken, zero corporate filler. Short paragraphs. End the 
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-")
     .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
     .slice(0, 60)
+    .replace(/^-+|-+$/g, "") // strip hyphens AFTER truncating so a cut never leaves one dangling
 
   const post: BlogPost = {
     slug,

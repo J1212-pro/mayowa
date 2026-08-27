@@ -57,8 +57,9 @@ export function HeroCharacter() {
         <img
           key={p.key}
           src={p.src}
-          alt={p.key === "center" ? "Mayowa AI character" : ""}
-          aria-hidden={p.key !== "center"}
+          alt={`AI-generated brand presenter created by MAYOWA, ${
+            p.key === "center" ? "facing the camera" : p.key === "left" ? "looking to the left" : "looking to the right"
+          } — no photoshoot involved`}
           draggable={false}
           className={`absolute inset-0 h-full w-full select-none object-cover transition-opacity duration-300 ease-out ${
             pose === p.key ? "opacity-100" : "opacity-0"

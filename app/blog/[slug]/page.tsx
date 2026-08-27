@@ -2,8 +2,23 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Nav, Footer, WaFloat, TikTokIcon, InstagramIcon } from "@/components/site"
 import { TIKTOK, TIKTOK_HANDLE, INSTAGRAM, INSTAGRAM_HANDLE, EMAIL } from "@/lib/contact"
-import { getPost } from "@/lib/blog"
+import { getPost, listPosts, type BlogPost } from "@/lib/blog"
 import { SITE_URL } from "@/lib/site"
+
+function postSchema(post: BlogPost) {
+  const day = post.date.slice(0, 10)
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: day,
+    dateModified: day,
+    author: { "@type": "Person", name: "Agbadaola John", url: `${SITE_URL}/` },
+    publisher: { "@type": "Organization", name: "MAYOWA", url: `${SITE_URL}/` },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/blog/${post.slug}` },
+  }
+}
 
 // Cached for speed; refreshed automatically when a post is published (and every 5 min).
 export const revalidate = 300
@@ -34,9 +49,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const { slug } = await params
   const post = await getPost(slug)
   if (!post) notFound()
+  const related = (await listPosts()).filter((p) => p.slug !== post.slug).slice(0, 2)
 
   return (
     <div className="flex-1">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(postSchema(post)) }} />
       <Nav />
 
       <article className="mx-auto max-w-3xl px-6 py-16">
@@ -50,6 +67,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           className="prose-mayowa mt-8 space-y-5 leading-relaxed text-white/80 [&_a]:text-brand [&_a]:underline [&_b]:text-white [&_blockquote]:border-l-2 [&_blockquote]:border-brand [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-10 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-white [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-white [&_li]:ml-5 [&_ol]:list-decimal [&_ol]:space-y-2 [&_strong]:text-white [&_ul]:list-disc [&_ul]:space-y-2"
           dangerouslySetInnerHTML={{ __html: post.html }}
         />
+
+        {/* Keep reading — internal links */}
+        <div className="mt-12 border-t border-white/10 pt-8">
+          <p className="text-sm font-semibold text-white/50">Keep reading</p>
+          <ul className="mt-3 space-y-2">
+            {related.map((p) => (
+              <li key={p.slug}>
+                <Link href={`/blog/${p.slug}`} className="text-brand underline hover:text-white">
+                  {p.title}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/portfolio" className="text-brand underline hover:text-white">
+                See the work: AI UGC & product imagery portfolio
+              </Link>
+            </li>
+          </ul>
+        </div>
 
         {/* CTA */}
         <div className="mt-14 rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center">

@@ -106,6 +106,19 @@ export function descriptionFromHtml(html: string): string {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160)
 }
 
+/** Remove a post's stored file (blob + local) without trashing it. Used when renaming. */
+export async function removePostFile(slug: string): Promise<void> {
+  if (hasBlobStore()) {
+    const match = (await listBlobs("blog/")).find((b) => b.pathname === `blog/${slug}.json`)
+    if (match) {
+      const { del } = await import("@vercel/blob")
+      await del(match.url)
+    }
+  }
+  const localFile = path.join(blogDir(), `${slug}.json`)
+  if (fs.existsSync(localFile)) fs.rmSync(localFile, { force: true })
+}
+
 // ---- Trash: deleted posts are parked here so they can be restored ----
 
 function localTrashDir() {
@@ -184,6 +197,6 @@ export function slugify(title: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
     .slice(0, 60)
+    .replace(/^-+|-+$/g, "") // strip hyphens AFTER truncating so a cut never leaves one dangling
 }

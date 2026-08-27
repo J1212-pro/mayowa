@@ -3,9 +3,9 @@
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://mayowaai.online").replace(/\/$/, "")
 
 export const SITE_NAME = "MAYOWA"
-export const SITE_TITLE = "MAYOWA — AI UGC Studio"
+export const SITE_TITLE = "AI UGC Videos & Product Imagery for Brands | MAYOWA"
 export const SITE_DESCRIPTION =
-  "MAYOWA creates AI UGC videos, AI product imagery, and websites for brands. Real content, zero cameras — first drafts in 48 hours."
+  "MAYOWA makes AI UGC videos, AI product photography and brand sites — no camera, no studio, no sample shipping. First drafts back in 48 hours."
 export const SITE_KEYWORDS = [
   "AI UGC",
   "AI UGC creation",

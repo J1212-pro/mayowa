@@ -21,14 +21,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
-    template: `%s — ${SITE_NAME}`,
+    template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   keywords: SITE_KEYWORDS,
   applicationName: SITE_NAME,
-  alternates: {
-    canonical: "/",
-  },
+  // No site-wide canonical here — each page declares its own so Google
+  // never sees /portfolio or /blog as duplicates of the homepage.
   robots: {
     index: true,
     follow: true,

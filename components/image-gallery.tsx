@@ -68,7 +68,7 @@ export function ImageGallery({ products, onLight = false }: { products: Product[
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={p.images[0]}
-                alt={p.name}
+                alt={`AI-generated product photography for ${p.name} — studio-quality shot created without a camera`}
                 loading="lazy"
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
               />
@@ -124,7 +124,7 @@ export function ImageGallery({ products, onLight = false }: { products: Product[
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={active.images[index]}
-              alt={`${active.name} — image ${index + 1}`}
+              alt={`AI-generated product image ${index + 1} of ${active.images.length} for ${active.name}`}
               className="max-h-[70vh] max-w-full rounded-xl object-contain"
             />
             <button
