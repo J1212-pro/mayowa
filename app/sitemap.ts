@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next"
 import { SITE_URL } from "@/lib/site"
 import { listPosts } from "@/lib/blog"
 
+// Refresh every 5 minutes so renamed and newly published posts appear.
+export const revalidate = 300
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
   const posts = await listPosts()
