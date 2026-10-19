@@ -6,9 +6,9 @@ Sign in at `/admin`, find **YouTube videos**, paste a video link, enter its port
 
 Use a public or unlisted video with embedding enabled. Standard watch links, `youtu.be` share links, mobile links, Shorts, live-video links, and embed links are accepted. No YouTube API key is needed.
 
-Records use the existing `BLOB_READ_WRITE_TOKEN` storage when configured. On Vercel, `GITHUB_TOKEN` is the fallback (using `GITHUB_REPO` and `GITHUB_BRANCH`); records are read directly from GitHub so changes appear without waiting for a redeploy. Local development saves records in `data/youtube-videos/`. Saving on Vercel requires one of these persistent storage connections.
+On Vercel, links are saved as small JSON records through the existing `GITHUB_TOKEN` connection (using `GITHUB_REPO` and `GITHUB_BRANCH`). `BLOB_READ_WRITE_TOKEN` is a fallback if GitHub is unavailable. Reads merge both sources so previously saved links remain visible, and a failure in one service does not block the other. GitHub records are read directly so changes appear without waiting for a redeploy. Local development saves records in `data/youtube-videos/`. Saving on Vercel requires one of these persistent connections; videos themselves stay on YouTube.
 
-Run link-validation checks with Node 22.18+ or Node 24: `node --test scripts/test-youtube.mjs`.
+Run link-validation and save-fallback checks with Node 22.18+ or Node 24: `node --test scripts/test-youtube.mjs scripts/test-youtube-storage.mjs`.
 
 ## Getting Started
 

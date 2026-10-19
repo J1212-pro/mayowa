@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { isAdmin } from "@/lib/admin"
+import { YouTubeStorageError } from "@/lib/youtube-storage"
 import { isYouTubeId, parseYouTubeId } from "@/lib/youtube"
 import { listYouTubeVideos, removeYouTubeVideo, saveYouTubeVideo } from "@/lib/youtube-videos"
 
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, video }, { status: 201 })
   } catch (err) {
     console.error("Could not save YouTube video:", err)
-    return NextResponse.json({ error: "Could not save the video. Check your storage connection and try again." }, { status: 500 })
+    return NextResponse.json({ error: err instanceof YouTubeStorageError ? err.message : "Could not publish the YouTube link. Please try again." }, { status: 503 })
   }
 }
 
@@ -47,6 +48,6 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error("Could not remove YouTube video:", err)
-    return NextResponse.json({ error: "Could not remove the video. Check your storage connection and try again." }, { status: 500 })
+    return NextResponse.json({ error: err instanceof YouTubeStorageError ? err.message : "Could not remove the YouTube link. Please try again." }, { status: 503 })
   }
 }
