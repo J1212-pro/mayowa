@@ -68,3 +68,15 @@ test("a deployment without any persistent connection reports configuration failu
   await assert.rejects(storage.save(video), /Connect GitHub or Vercel Blob/)
   await assert.rejects(storage.list(), YouTubeStorageError)
 })
+
+test("admin errors identify failed services without including credential values", async () => {
+  const github = backend("GitHub")
+  github.save = async () => { throw new Error("Bad credentials ghp_example_secret https://example.com/?token=secret") }
+  const storage = createYouTubeStorage([github], ignore)
+  await assert.rejects(storage.save(video), (error) => {
+    assert.ok(error.message.includes("GitHub: Bad credentials"))
+    assert.ok(!error.message.includes("ghp_example_secret"))
+    assert.ok(!error.message.includes("token=secret"))
+    return true
+  })
+})
