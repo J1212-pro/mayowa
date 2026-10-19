@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { upload as blobUpload } from "@vercel/blob/client"
 import { Logo } from "@/components/site"
+import { YouTubeAdmin } from "@/components/youtube-admin"
+import type { YouTubeVideo } from "@/lib/youtube"
 import type { Video, Product } from "@/lib/media"
 import type { BlogPost } from "@/lib/blog"
 
@@ -31,12 +34,14 @@ export function AdminPanel({
   posts,
   trashedPosts,
   blobEnabled,
+  youtubeVideos,
 }: {
   videos: Video[]
   products: Product[]
   posts: BlogPost[]
   trashedPosts: BlogPost[]
   blobEnabled: boolean
+  youtubeVideos: YouTubeVideo[]
 }) {
   const router = useRouter()
   const [msg, setMsg] = useState("")
@@ -291,9 +296,9 @@ export function AdminPanel({
       <div className="mb-8 flex items-center justify-between">
         <Logo />
         <div className="flex items-center gap-3">
-          <a href="/" className="text-sm text-white/60 hover:text-white">
+          <Link href="/" className="text-sm text-white/60 hover:text-white">
             View site
-          </a>
+          </Link>
           <button
             onClick={logout}
             className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white/80 transition hover:border-white hover:text-white"
@@ -482,6 +487,8 @@ export function AdminPanel({
             </div>
           )}
         </Section>
+
+        <YouTubeAdmin videos={youtubeVideos} />
 
         <Section
           title="Portfolio videos"

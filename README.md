@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## YouTube portfolio videos
+
+Sign in at `/admin`, find **YouTube videos**, paste a video link, enter its portfolio title, and choose **Add to portfolio**. The video appears in the **Long-form videos** section of `/portfolio`. **Remove** takes it off the portfolio without deleting it from YouTube.
+
+Use a public or unlisted video with embedding enabled. Standard watch links, `youtu.be` share links, mobile links, Shorts, live-video links, and embed links are accepted. No YouTube API key is needed.
+
+Records use the existing `BLOB_READ_WRITE_TOKEN` storage when configured. On Vercel, `GITHUB_TOKEN` is the fallback (using `GITHUB_REPO` and `GITHUB_BRANCH`); records are read directly from GitHub so changes appear without waiting for a redeploy. Local development saves records in `data/youtube-videos/`. Saving on Vercel requires one of these persistent storage connections.
+
+Run link-validation checks with Node 22.18+ or Node 24: `node --test scripts/test-youtube.mjs`.
+
 ## Getting Started
 
 First, run the development server:

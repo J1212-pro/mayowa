@@ -38,6 +38,25 @@ async function getFileSha(repoPath: string): Promise<string | null> {
   return typeof data?.sha === "string" ? data.sha : null
 }
 
+/** Read small JSON records from the current branch, including recent admin edits. */
+export async function githubReadJsonFiles(repoDir: string): Promise<unknown[]> {
+  const ref = encodeURIComponent(BRANCH)
+  const res = await gh(`contents/${encodePath(repoDir)}?ref=${ref}`)
+  if (res.status === 404) return []
+  if (!res.ok) throw new Error(`Could not load YouTube videos from GitHub (${res.status}).`)
+  const entries = await res.json()
+  if (!Array.isArray(entries)) throw new Error("Invalid YouTube video folder in GitHub.")
+  return Promise.all(entries
+    .filter((entry) => entry.type === "file" && typeof entry.path === "string" && entry.path.endsWith(".json"))
+    .map(async (entry) => {
+      const fileRes = await gh(`contents/${encodePath(entry.path)}?ref=${ref}`)
+      if (!fileRes.ok) throw new Error(`Could not read a YouTube video from GitHub (${fileRes.status}).`)
+      const file = await fileRes.json()
+      if (file.encoding !== "base64" || typeof file.content !== "string") throw new Error("Invalid YouTube video record.")
+      return JSON.parse(Buffer.from(file.content, "base64").toString("utf8"))
+    }))
+}
+
 export async function githubPutFile(repoPath: string, bytes: Buffer, message: string): Promise<void> {
   const sha = await getFileSha(repoPath)
   const res = await gh(`contents/${encodePath(repoPath)}`, {

@@ -3,6 +3,8 @@ import { VideoGrid } from "@/components/video-grid"
 import { ImageGallery } from "@/components/image-gallery"
 import { listVideos, loadProducts } from "@/lib/media"
 import { SITE_URL } from "@/lib/site"
+import { listYouTubeVideos } from "@/lib/youtube-videos"
+import { YouTubeGallery } from "@/components/youtube-gallery"
 
 // Cached for speed; refreshed automatically after admin changes (and every 5 min).
 export const revalidate = 300
@@ -23,7 +25,7 @@ export const metadata = {
 }
 
 export default async function PortfolioPage() {
-  const [products, videos] = await Promise.all([loadProducts(), listVideos()])
+  const [products, videos, youtubeVideos] = await Promise.all([loadProducts(), listVideos(), listYouTubeVideos()])
 
   return (
     <div className="flex-1">
@@ -42,6 +44,8 @@ export default async function PortfolioPage() {
       <section className="px-6 py-20">
         <VideoGrid videos={videos} />
       </section>
+
+      <YouTubeGallery videos={youtubeVideos} />
 
       {/* AI Image Generation — contrasting white section */}
       <section id="images" className="bg-white px-6 py-24 text-neutral-950">
