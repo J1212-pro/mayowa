@@ -2,7 +2,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## YouTube portfolio videos
 
-Sign in at `/admin`, find **YouTube videos**, paste a video link, enter its portfolio title, and choose **Add to portfolio**. The video appears in the **Long-form videos** section of `/portfolio`. **Remove** takes it off the portfolio without deleting it from YouTube.
+Direct portfolio links live in `lib/portfolio-youtube.ts` and ship with the website. Edit that list and redeploy to add or remove these videos; they do not require GitHub API credentials or Vercel Blob. Set `format: "short"` for a portrait player. The portfolio keeps these embeds visible even when admin storage is unavailable.
+
+For additions through the admin, sign in at `/admin`, find **YouTube videos**, paste a video link, enter its portfolio title, and choose **Add to portfolio**. The video appears in the **On YouTube** section of `/portfolio`. **Remove** takes an admin-saved link off the portfolio without deleting it from YouTube. Direct links are maintained in the website source, not the admin list.
 
 Use a public or unlisted video with embedding enabled. Standard watch links, `youtu.be` share links, mobile links, Shorts, live-video links, and embed links are accepted. No YouTube API key is needed.
 

@@ -4,6 +4,7 @@ import { ImageGallery } from "@/components/image-gallery"
 import { listVideos, loadProducts } from "@/lib/media"
 import { SITE_URL } from "@/lib/site"
 import { listYouTubeVideos } from "@/lib/youtube-videos"
+import { portfolioYouTubeVideos } from "@/lib/portfolio-youtube"
 import { YouTubeGallery } from "@/components/youtube-gallery"
 
 // Cached for speed; refreshed automatically after admin changes (and every 5 min).
@@ -25,7 +26,16 @@ export const metadata = {
 }
 
 export default async function PortfolioPage() {
-  const [products, videos, youtubeVideos] = await Promise.all([loadProducts(), listVideos(), listYouTubeVideos()])
+  const [products, videos, savedYouTubeVideos] = await Promise.all([
+    loadProducts(),
+    listVideos(),
+    listYouTubeVideos().catch(() => []),
+  ])
+  const directIds = new Set(portfolioYouTubeVideos.map((video) => video.id))
+  const youtubeVideos = [
+    ...portfolioYouTubeVideos,
+    ...savedYouTubeVideos.filter((video) => !directIds.has(video.id)),
+  ]
 
   return (
     <div className="flex-1">
