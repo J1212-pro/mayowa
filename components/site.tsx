@@ -255,26 +255,3 @@ export function WaFloat() {
     </a>
   )
 }
-
-export function VideoCard({ src, tag }: { src: string; tag: string }) {
-  return (
-    <div className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
-      <video
-        src={src}
-        muted
-        loop
-        playsInline
-        autoPlay
-        preload="metadata"
-        className="h-full w-full cursor-pointer object-cover"
-        onClick={(e) => {
-          const v = e.currentTarget
-          v.muted = !v.muted
-        }}
-      />
-      <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-[11px] font-semibold tracking-wide backdrop-blur-sm">
-        {tag}
-      </span>
-    </div>
-  )
-}

@@ -1,11 +1,12 @@
 import fs from "fs"
 import path from "path"
 import manifest from "./media-manifest.json"
+import videoPreviews from "./video-previews.json"
 
 export const VIDEO_EXTS = new Set([".mp4", ".webm", ".mov", ".m4v"])
 export const IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"])
 
-export type Video = { file: string; src: string; tag: string }
+export type Video = { file: string; src: string; tag: string; poster?: string; format?: "short" | "video" }
 export type Product = { name: string; images: string[] }
 
 const PUBLIC = () => path.join(process.cwd(), "public")
@@ -52,6 +53,7 @@ function localVideos(): Video[] {
     file: f,
     src: "/portfolio/" + encodeURIComponent(f),
     tag: path.parse(f).name,
+    ...((videoPreviews as Record<string, { poster: string; format: "short" | "video" }>)[f] || {}),
   }))
 }
 

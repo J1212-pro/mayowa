@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 
 type Pose = "left" | "center" | "right"
 
@@ -53,10 +54,13 @@ export function HeroCharacter() {
       className={`relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-3xl border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.6)] transition-transform duration-500 ease-out ${shift}`}
     >
       {poses.map((p) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           key={p.key}
           src={p.src}
+          fill
+          sizes="(max-width: 767px) 90vw, 448px"
+          loading={p.key === "center" ? "eager" : "lazy"}
+          fetchPriority={p.key === "center" ? "high" : "auto"}
           alt={`AI-generated brand presenter created by MAYOWA, ${
             p.key === "center" ? "facing the camera" : p.key === "left" ? "looking to the left" : "looking to the right"
           }, no photoshoot involved`}

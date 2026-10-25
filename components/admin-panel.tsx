@@ -35,6 +35,7 @@ export function AdminPanel({
   trashedPosts,
   blobEnabled,
   youtubeVideos,
+  publishing,
 }: {
   videos: Video[]
   products: Product[]
@@ -42,6 +43,7 @@ export function AdminPanel({
   trashedPosts: BlogPost[]
   blobEnabled: boolean
   youtubeVideos: YouTubeVideo[]
+  publishing: { available: boolean; repo: string; branch: string }
 }) {
   const router = useRouter()
   const [msg, setMsg] = useState("")
@@ -488,7 +490,7 @@ export function AdminPanel({
           )}
         </Section>
 
-        <YouTubeAdmin videos={youtubeVideos} />
+      <YouTubeAdmin videos={youtubeVideos} publishing={publishing} />
 
         <Section
           title="Portfolio videos"

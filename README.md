@@ -1,16 +1,20 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## YouTube portfolio videos
+## Portfolio video links
 
-Direct portfolio links live in `lib/portfolio-youtube.ts` and ship with the website. Edit that list and redeploy to add or remove these videos; they do not require GitHub API credentials or Vercel Blob. Set `format: "short"` for a portrait player. The portfolio keeps these embeds visible even when admin storage is unavailable.
+In `/admin`, use **Portfolio video links**. Choose YouTube or a direct public HTTPS MP4/WebM URL, paste the link, and choose portrait (9:16) or landscape (16:9). A title is optional; YouTube titles are fetched automatically when available. Shorts links select portrait by default. Published videos share one masonry gallery, keeping their selected proportions.
 
-For additions through the admin, sign in at `/admin`, find **YouTube videos**, paste a video link, enter its portfolio title, and choose **Add to portfolio**. The video appears in the **On YouTube** section of `/portfolio`. **Remove** takes an admin-saved link off the portfolio without deleting it from YouTube. Direct links are maintained in the website source, not the admin list.
+The initial page uses small preview images. A player is only loaded when Play is pressed, and the portfolio allows one active player at a time. YouTube may display channel identity, Like/Share and other controls during playback; its supported settings cannot fully remove these. Use original video files or direct video URLs for playback without YouTube branding.
 
 Use a public or unlisted video with embedding enabled. Standard watch links, `youtu.be` share links, mobile links, Shorts, live-video links, and embed links are accepted. No YouTube API key is needed.
 
-On Vercel, links are saved as small JSON records through the existing `GITHUB_TOKEN` connection (using `GITHUB_REPO` and `GITHUB_BRANCH`). `BLOB_READ_WRITE_TOKEN` is a fallback if GitHub is unavailable. Reads merge both sources so previously saved links remain visible, and a failure in one service does not block the other. GitHub records are read directly so changes appear without waiting for a redeploy. Local development saves records in `data/youtube-videos/`. Saving on Vercel requires one of these persistent connections; videos themselves stay on YouTube.
+With a working `GITHUB_TOKEN` or `BLOB_READ_WRITE_TOKEN`, **Add to portfolio** saves the small video record automatically. If both connections fail, the admin provides **Continue publishing on GitHub**. That link opens a prepared file: sign in to GitHub, choose **Commit changes**, and wait for Vercel's deployment. Preparing the link does not publish it. This fallback needs repository write access but no API token or Blob store. Nothing is uploaded to YouTube by this form.
 
-Run link-validation and save-fallback checks with Node 22.18+ or Node 24: `node --test scripts/test-youtube.mjs scripts/test-youtube-storage.mjs`.
+Repository records live in `data/youtube-videos/`. The prebuild script generates `lib/youtube-manifest.json` so those links remain available even during a storage outage. Use **Edit on GitHub** for repository records; editing/deleting their file takes effect after redeployment. **Remove** handles records available only through the live connection. Videos themselves remain at their original host.
+
+Local media previews are in `public/video-previews/`, with dimensions in `lib/video-previews.json`. Regenerate them after adding repository videos using `node scripts/generate-video-previews.mjs /path/to/ffmpeg`. Commit the generated files; production builds do not need FFmpeg. Video files are not downloaded until playback. Product and hero images use Next.js image optimization, and the homepage background uses CSS rather than WebGL.
+
+Run validation and publishing-fallback checks with Node 22.18+ or Node 24: `node --test scripts/test-youtube.mjs scripts/test-youtube-storage.mjs scripts/test-portfolio-links.mjs`.
 
 ## Getting Started
 

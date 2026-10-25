@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 
 export type Product = {
   name: string
@@ -65,11 +66,12 @@ export function ImageGallery({ products, onLight = false }: { products: Product[
             }`}
           >
             <div className="relative aspect-square overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={p.images[0]}
                 alt={`AI-generated product photography for ${p.name}, a studio-quality shot created without a camera`}
                 loading="lazy"
+                fill
+                sizes="(max-width: 767px) 50vw, 380px"
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
               />
             </div>

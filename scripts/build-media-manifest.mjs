@@ -32,3 +32,11 @@ const products = fs.existsSync(imagesDir)
 const manifest = { videos, products }
 fs.writeFileSync(path.join(root, "lib", "media-manifest.json"), JSON.stringify(manifest, null, 2))
 console.log(`media-manifest: ${videos.length} videos, ${products.length} products`)
+
+const linksDir = path.join(root, "data", "youtube-videos")
+const links = fs.existsSync(linksDir)
+  ? fs.readdirSync(linksDir).filter((file) => file.endsWith(".json"))
+    .map((file) => JSON.parse(fs.readFileSync(path.join(linksDir, file), "utf8")))
+  : []
+fs.writeFileSync(path.join(root, "lib", "youtube-manifest.json"), JSON.stringify(links, null, 2))
+console.log(`youtube-manifest: ${links.length} portfolio links`)

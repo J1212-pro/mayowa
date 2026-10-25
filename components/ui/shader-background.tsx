@@ -1,19 +1,5 @@
-"use client"
-
-import { MeshGradient } from "@paper-design/shaders-react"
-
-export function ShaderBackground({
-  colors = ["#000000", "#170606", "#ff2b2b", "#4a0d0d"],
-  speed = 0.45,
-  className = "",
-}: {
-  colors?: string[]
-  speed?: number
-  className?: string
-}) {
+export function ShaderBackground() {
   return (
-    <div className={`absolute inset-0 overflow-hidden ${className}`} aria-hidden="true">
-      <MeshGradient className="h-full w-full" colors={colors} speed={speed} />
-    </div>
+    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_80%_15%,#4a0d0d_0%,#170606_35%,#000_75%)]" aria-hidden="true" />
   )
 }

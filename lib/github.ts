@@ -20,6 +20,7 @@ function encodePath(repoPath: string): string {
 
 async function gh(pathname: string, init?: RequestInit): Promise<Response> {
   return fetch(`https://api.github.com/repos/${REPO}/${pathname}`, {
+    signal: AbortSignal.timeout(8000),
     ...init,
     headers: {
       Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,

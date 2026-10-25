@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ShaderBackground } from "@/components/ui/shader-background"
 import { HeroCharacter } from "@/components/hero-character"
 import { HeroTitle } from "@/components/hero-title"
+import { StandaloneVideoCard } from "@/components/video-card"
 import { listVideos } from "@/lib/media"
 import { listPosts } from "@/lib/blog"
 import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/site"
@@ -35,7 +36,6 @@ import {
   Footer,
   WaFloat,
   CtaBand,
-  VideoCard,
   WhatsAppIcon,
   PhoneIcon,
   CamIcon,
@@ -108,7 +108,7 @@ export default async function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       <Nav />
 
-      {/* Hero with animated shader background */}
+      {/* Lightweight CSS hero background */}
       <header className="relative overflow-hidden">
         <ShaderBackground />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black" />
@@ -195,7 +195,7 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {teaser.map((v) => (
-              <VideoCard key={v.src} src={v.src} tag="AI UGC · 9:16" />
+              <StandaloneVideoCard key={v.src} video={{ id: v.src, src: v.src, title: v.tag, poster: v.poster, format: v.format || "short" }} />
             ))}
             <Link
               href="/portfolio"

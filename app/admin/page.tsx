@@ -4,6 +4,7 @@ import { listPosts, listTrashedPosts } from "@/lib/blog"
 import { AdminLogin } from "@/components/admin-login"
 import { AdminPanel } from "@/components/admin-panel"
 import { listYouTubeVideos } from "@/lib/youtube-videos"
+import { portfolioYouTubeVideos } from "@/lib/portfolio-youtube"
 
 export const dynamic = "force-dynamic"
 
@@ -24,7 +25,7 @@ export default async function AdminPage() {
     loadProducts(),
     listPosts(),
     listTrashedPosts(),
-    listYouTubeVideos(),
+    listYouTubeVideos().then((videos) => ({ videos, available: true })).catch(() => ({ videos: [], available: false })),
   ])
   return (
     <AdminPanel
@@ -33,7 +34,8 @@ export default async function AdminPage() {
       posts={posts}
       trashedPosts={trashedPosts}
       blobEnabled={!!process.env.BLOB_READ_WRITE_TOKEN}
-      youtubeVideos={youtubeVideos}
+      youtubeVideos={[...new Map([...portfolioYouTubeVideos, ...youtubeVideos.videos].map((video) => [video.id, video])).values()]}
+      publishing={{ available: youtubeVideos.available, repo: process.env.GITHUB_REPO || "J1212-pro/mayowa", branch: process.env.GITHUB_BRANCH || "master" }}
     />
   )
 }

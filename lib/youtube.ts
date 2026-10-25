@@ -2,6 +2,9 @@ export type YouTubeVideo = {
   id: string
   title: string
   addedAt: string
+  format?: "short" | "video"
+  source?: "youtube" | "file"
+  videoUrl?: string
 }
 
 export function isYouTubeId(value: unknown): value is string {
@@ -43,4 +46,21 @@ export function isYouTubeVideo(value: unknown): value is YouTubeVideo {
   return isYouTubeId(video.id)
     && typeof video.title === "string" && !!video.title.trim() && video.title.length <= 120
     && typeof video.addedAt === "string" && Number.isFinite(Date.parse(video.addedAt))
+    && (video.format === undefined || video.format === "short" || video.format === "video")
+    && (video.source === undefined || video.source === "youtube" || video.source === "file")
+    && (video.source !== "file" || isDirectVideoUrl(video.videoUrl))
+}
+
+/** Direct URLs are rendered by the browser, never fetched by the server. */
+export function isDirectVideoUrl(value: unknown): value is string {
+  if (typeof value !== "string" || value.length > 2048) return false
+  try {
+    const url = new URL(value)
+    return url.protocol === "https:" && !url.username && !url.password
+      && /\.(mp4|webm)$/i.test(url.pathname)
+  } catch { return false }
+}
+
+export function videoLink(video: YouTubeVideo): string {
+  return video.source === "file" ? video.videoUrl! : youtubeWatchUrl(video.id)
 }

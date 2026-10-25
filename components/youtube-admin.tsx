@@ -2,23 +2,29 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { parseYouTubeId, youtubeWatchUrl, type YouTubeVideo } from "@/lib/youtube"
+import { isDirectVideoUrl, parseYouTubeId, videoLink, type YouTubeVideo } from "@/lib/youtube"
+import { portfolioYouTubeVideos } from "@/lib/portfolio-youtube"
+import { githubEditVideoUrl } from "@/lib/github-publish"
 
-export function YouTubeAdmin({ videos }: { videos: YouTubeVideo[] }) {
+export function YouTubeAdmin({ videos, publishing }: { videos: YouTubeVideo[]; publishing: { available: boolean; repo: string; branch: string } }) {
   const router = useRouter()
   const [url, setUrl] = useState("")
   const [title, setTitle] = useState("")
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState(false)
+  const [source, setSource] = useState<"youtube" | "file">("youtube")
+  const [format, setFormat] = useState<"short" | "video">("video")
+  const [publishUrl, setPublishUrl] = useState("")
 
   const save = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setMessage("")
     setError(false)
-    if (!parseYouTubeId(url)) {
+    setPublishUrl("")
+    if (source === "youtube" ? !parseYouTubeId(url) : !isDirectVideoUrl(url)) {
       setError(true)
-      setMessage("Paste a valid YouTube video link, such as youtube.com/watch?v=… or youtu.be/…")
+      setMessage(source === "youtube" ? "Paste a YouTube watch, share, or Shorts link." : "Paste a public HTTPS video link ending in .mp4 or .webm.")
       return
     }
     setBusy(true)
@@ -26,10 +32,13 @@ export function YouTubeAdmin({ videos }: { videos: YouTubeVideo[] }) {
       const res = await fetch("/api/admin/youtube", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, title }),
+        body: JSON.stringify({ url, title, source, format }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || "Could not save the video. Please try again.")
+      if (!res.ok) {
+        if (typeof data.publishUrl === "string" && data.publishUrl.startsWith("https://github.com/")) setPublishUrl(data.publishUrl)
+        throw new Error(data.error || "Could not save the video. Please try again.")
+      }
       setUrl("")
       setTitle("")
       setMessage("Video added. It is now in your portfolio.")
@@ -43,7 +52,7 @@ export function YouTubeAdmin({ videos }: { videos: YouTubeVideo[] }) {
   }
 
   const remove = async (video: YouTubeVideo) => {
-    if (!confirm(`Remove "${video.title}" from your portfolio? The video will stay on YouTube.`)) return
+    if (!confirm(`Remove "${video.title}" from your portfolio? The original video will not be deleted.`)) return
     setBusy(true)
     setMessage("")
     setError(false)
@@ -69,17 +78,30 @@ export function YouTubeAdmin({ videos }: { videos: YouTubeVideo[] }) {
 
   return (
     <section className="rounded-3xl bg-white p-6 text-neutral-950 sm:p-8">
-      <h2 className="text-lg font-semibold">YouTube videos</h2>
-      <p className="mt-1 text-sm text-neutral-500">Add a link and a title to show a long video in your portfolio automatically.</p>
+      <h2 className="text-lg font-semibold">Portfolio video links</h2>
+      <p className="mt-1 text-sm text-neutral-500">Paste a link, choose the shape, and publish it to your portfolio.</p>
+      {!publishing.available && <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Automatic publishing is disconnected. You can still prepare a video here, then confirm it on GitHub. Your website updates when the deployment finishes.</p>}
       <form onSubmit={save} className="mt-5 space-y-4">
-        <div>
-          <label htmlFor="youtube-url" className="mb-1.5 block text-sm font-medium">YouTube video link</label>
-          <input id="youtube-url" name="url" type="text" inputMode="url" autoComplete="off" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=…" maxLength={2048} required disabled={busy} aria-describedby="youtube-help" className={inputClass} />
-          <p id="youtube-help" className="mt-2 text-xs text-neutral-500">Use a public or unlisted video with embedding enabled on YouTube.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div><label htmlFor="video-source" className="mb-1.5 block text-sm font-medium">Video source</label>
+            <select id="video-source" value={source} disabled={busy} onChange={(e) => { setSource(e.target.value as "youtube" | "file"); setUrl(""); setPublishUrl(""); setMessage("") }} className={inputClass}>
+              <option value="youtube">YouTube link</option><option value="file">Direct video link · no YouTube branding</option>
+            </select>
+          </div>
+          <div><label htmlFor="video-format" className="mb-1.5 block text-sm font-medium">Video shape</label>
+            <select id="video-format" value={format} disabled={busy} onChange={(e) => { setFormat(e.target.value as "short" | "video"); setPublishUrl("") }} className={inputClass}>
+              <option value="video">Landscape · 16:9</option><option value="short">Portrait · 9:16</option>
+            </select>
+          </div>
         </div>
         <div>
-          <label htmlFor="youtube-title" className="mb-1.5 block text-sm font-medium">Portfolio title</label>
-          <input id="youtube-title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. A brand story, brought to life" maxLength={120} required disabled={busy} className={inputClass} />
+          <label htmlFor="youtube-url" className="mb-1.5 block text-sm font-medium">{source === "youtube" ? "YouTube video link" : "Direct MP4 or WebM link"}</label>
+          <input id="youtube-url" name="url" type="text" inputMode="url" autoComplete="off" value={url} onChange={(e) => { setUrl(e.target.value); setPublishUrl(""); if (source === "youtube") setFormat(e.target.value.includes("/shorts/") ? "short" : "video") }} placeholder={source === "youtube" ? "https://www.youtube.com/watch?v=…" : "https://your-video-host.com/video.mp4"} maxLength={2048} required disabled={busy} aria-describedby="youtube-help" className={inputClass} />
+          <p id="youtube-help" className="mt-2 text-xs text-neutral-500">{source === "youtube" ? "Use a public or unlisted video. The preview is clean; YouTube may show its branding during playback." : "Use a public link to the original video file. This plays with your website’s video controls and no YouTube branding."}</p>
+        </div>
+        <div>
+          <label htmlFor="youtube-title" className="mb-1.5 block text-sm font-medium">Portfolio title <span className="font-normal text-neutral-500">(optional)</span></label>
+          <input id="youtube-title" name="title" value={title} onChange={(e) => { setTitle(e.target.value); setPublishUrl("") }} placeholder={source === "youtube" ? "Leave blank to use the YouTube title" : "e.g. A brand story, brought to life"} maxLength={120} disabled={busy} className={inputClass} />
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <button type="submit" disabled={busy} className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{busy ? "Working…" : "Add to portfolio"}</button>
@@ -87,17 +109,21 @@ export function YouTubeAdmin({ videos }: { videos: YouTubeVideo[] }) {
         </div>
       </form>
       {message && <p role={error ? "alert" : "status"} className={`mt-4 rounded-xl px-4 py-3 text-sm ${error ? "bg-red-50 text-red-700" : "bg-green-50 text-green-800"}`}>{message}</p>}
+      {publishUrl && <a href={publishUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white">Continue publishing on GitHub ↗</a>}
       <ul className="mt-5 divide-y divide-neutral-200 border-t border-neutral-200">
         {videos.map((video) => (
           <li key={video.id} className="flex items-center justify-between gap-4 py-3 text-sm">
             <div className="min-w-0">
               <p className="break-words font-medium">{video.title}</p>
-              <a href={youtubeWatchUrl(video.id)} target="_blank" rel="noopener noreferrer" className="mt-1 block truncate text-xs text-neutral-500 underline">{youtubeWatchUrl(video.id)}</a>
+              <p className="mt-1 text-xs text-neutral-500">{video.format === "short" ? "Portrait · 9:16" : "Landscape · 16:9"} · {video.source === "file" ? "Direct video" : "YouTube"}</p>
+              <a href={videoLink(video)} target="_blank" rel="noopener noreferrer" className="mt-1 block truncate text-xs text-neutral-500 underline">{videoLink(video)}</a>
             </div>
-            <button type="button" onClick={() => remove(video)} disabled={busy} aria-label={`Remove ${video.title}`} className="shrink-0 text-xs font-semibold text-red-600 hover:underline disabled:opacity-60">Remove</button>
+            {portfolioYouTubeVideos.some((record) => record.id === video.id)
+              ? <a href={githubEditVideoUrl(video.id, publishing.repo, publishing.branch)} target="_blank" rel="noopener noreferrer" className="shrink-0 text-xs font-semibold underline">Edit on GitHub ↗</a>
+              : <button type="button" onClick={() => remove(video)} disabled={busy} aria-label={`Remove ${video.title}`} className="shrink-0 text-xs font-semibold text-red-600 hover:underline disabled:opacity-60">Remove</button>}
           </li>
         ))}
-        {!videos.length && <li className="py-3 text-sm text-neutral-400">No YouTube videos yet. Add your first link above.</li>}
+        {!videos.length && <li className="py-3 text-sm text-neutral-400">No video links yet. Add your first link above.</li>}
       </ul>
     </section>
   )
