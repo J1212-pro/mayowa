@@ -13,7 +13,14 @@ export const metadata = {
   title: "AI UGC & Content Marketing Blog",
   description: DESCRIPTION,
   alternates: { canonical: "/blog" },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/twitter-image"],
+    title: "AI UGC & Content Marketing Blog | MAYOWA",
+    description: DESCRIPTION,
+  },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "MAYOWA AI content studio" }],
     type: "website",
     url: `${SITE_URL}/blog`,
     title: "AI UGC & Content Marketing Blog | MAYOWA",

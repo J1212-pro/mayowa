@@ -31,7 +31,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: post.title,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
+    twitter: {
+      card: "summary_large_image",
+      images: ["/twitter-image"],
+      title: post.title,
+      description: post.description,
+    },
     openGraph: {
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "MAYOWA AI content studio" }],
       type: "article",
       url: `${SITE_URL}/blog/${post.slug}`,
       title: post.title,
