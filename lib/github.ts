@@ -100,3 +100,51 @@ export async function githubDeleteDir(repoPath: string, message: string): Promis
   }
   return ok
 }
+
+async function githubJson(pathname: string, init?: RequestInit) {
+  const response = await gh(pathname, { ...init, signal: AbortSignal.timeout(30000) })
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}))
+    if (response.status === 429 || response.headers.get("retry-after") || /rate limit/i.test(String(detail?.message))) {
+      throw new Error("GitHub is temporarily limiting uploads. Wait a minute, then try again; your selected photos are still ready.")
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("GitHub publishing needs a valid connection with Contents read and write access to this repository. Your photos have not been published.")
+    }
+    throw new Error(`GitHub could not save this portfolio (${response.status}). Try again shortly.`)
+  }
+  return response.json()
+}
+
+export async function githubStagePhoto(bytes: Buffer): Promise<string> {
+  const blob = await githubJson("git/blobs", {
+    method: "POST",
+    body: JSON.stringify({ content: bytes.toString("base64"), encoding: "base64" }),
+  })
+  if (!/^[a-f0-9]{40}$/.test(blob.sha)) throw new Error("GitHub returned an invalid file receipt.")
+  return blob.sha
+}
+
+/** Publish a whole gallery in one commit; retry branch races without overwriting other work. */
+export async function githubCommitPhotos(files: { path: string; sha: string }[], message: string): Promise<{ sha: string; url: string }> {
+  const branchPath = BRANCH.split("/").map(encodeURIComponent).join("/")
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const ref = await githubJson(`git/ref/heads/${branchPath}`)
+    const parent = await githubJson(`git/commits/${ref.object.sha}`)
+    const tree = await githubJson("git/trees", {
+      method: "POST",
+      body: JSON.stringify({ base_tree: parent.tree.sha, tree: files.map((file) => ({ ...file, mode: "100644", type: "blob" })) }),
+    })
+    const commit = await githubJson("git/commits", {
+      method: "POST",
+      body: JSON.stringify({ message, tree: tree.sha, parents: [ref.object.sha] }),
+    })
+    const updated = await gh(`git/refs/heads/${branchPath}`, {
+      method: "PATCH",
+      body: JSON.stringify({ sha: commit.sha, force: false }),
+    })
+    if (updated.ok) return { sha: commit.sha, url: `https://github.com/${REPO}/commit/${commit.sha}` }
+    if (![409, 422].includes(updated.status)) throw new Error(`GitHub could not publish this portfolio (${updated.status}). Your site has not changed.`)
+  }
+  throw new Error("The repository changed while publishing. Try publishing again; your selected photos are still ready.")
+}

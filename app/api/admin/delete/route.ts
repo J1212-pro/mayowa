@@ -3,7 +3,8 @@ import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { isAdmin } from "@/lib/admin"
 import { safeName, resolveInside, videosDir, imagesDir, hasBlobStore, listBlobs } from "@/lib/media"
-import { useGithubStorage, githubDeleteFile, githubDeleteDir } from "@/lib/github"
+import { useGithubStorage as githubStorageEnabled, githubDeleteFile, githubDeleteDir } from "@/lib/github"
+import { portfolioName } from "@/lib/portfolio-images"
 
 /** Delete matching media from the Blob store. Returns true if anything was removed. */
 async function deleteFromBlob(kind: string, name: string, product: string): Promise<boolean> {
@@ -33,11 +34,17 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null)
   const kind = body?.kind
-  const name = safeName(String(body?.name || ""))
+  let name: string
+  try { name = kind === "product" ? portfolioName(body?.name) : safeName(String(body?.name || "")) }
+  catch { return NextResponse.json({ error: "Invalid portfolio name." }, { status: 400 }) }
   if (!name) {
     return NextResponse.json({ error: "Missing name." }, { status: 400 })
   }
-  const productForImage = safeName(String(body?.product || ""), 60)
+  let productForImage = ""
+  if (kind === "image") {
+    try { productForImage = portfolioName(body?.product) }
+    catch { return NextResponse.json({ error: "Invalid portfolio name." }, { status: 400 }) }
+  }
   if (kind === "image" && !productForImage) {
     return NextResponse.json({ error: "Missing product." }, { status: 400 })
   }
@@ -48,7 +55,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true })
   }
 
-  if (useGithubStorage()) {
+  if (githubStorageEnabled()) {
     const message = `Admin delete: ${name}`
     let ok = false
     if (kind === "video") {
@@ -56,7 +63,7 @@ export async function POST(req: Request) {
     } else if (kind === "product") {
       ok = await githubDeleteDir(`public/images/${name}`, message)
     } else if (kind === "image") {
-      const product = safeName(String(body?.product || ""), 60)
+      const product = productForImage
       if (!product) return NextResponse.json({ error: "Missing product." }, { status: 400 })
       ok = await githubDeleteFile(`public/images/${product}/${name}`, message)
     } else {
@@ -72,7 +79,7 @@ export async function POST(req: Request) {
   } else if (kind === "product") {
     target = resolveInside(imagesDir(), name)
   } else if (kind === "image") {
-    const product = safeName(String(body?.product || ""), 60)
+    const product = productForImage
     if (!product) return NextResponse.json({ error: "Missing product." }, { status: 400 })
     target = resolveInside(imagesDir(), product, name)
   } else {

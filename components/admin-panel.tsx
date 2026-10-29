@@ -6,12 +6,12 @@ import Link from "next/link"
 import { upload as blobUpload } from "@vercel/blob/client"
 import { Logo } from "@/components/site"
 import { YouTubeAdmin } from "@/components/youtube-admin"
+import { PortfolioImagesAdmin } from "@/components/portfolio-images-admin"
 import type { YouTubeVideo } from "@/lib/youtube"
 import type { Video, Product } from "@/lib/media"
 import type { BlogPost } from "@/lib/blog"
 
 const VIDEO_EXT_LIST = [".mp4", ".webm", ".mov", ".m4v"]
-const IMAGE_EXT_LIST = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]
 
 function extOk(name: string, allowed: string[]) {
   const dot = name.lastIndexOf(".")
@@ -34,6 +34,7 @@ export function AdminPanel({
   posts,
   trashedPosts,
   blobEnabled,
+  githubConnected,
   youtubeVideos,
   publishing,
 }: {
@@ -42,6 +43,7 @@ export function AdminPanel({
   posts: BlogPost[]
   trashedPosts: BlogPost[]
   blobEnabled: boolean
+  githubConnected: boolean
   youtubeVideos: YouTubeVideo[]
   publishing: { available: boolean; repo: string; branch: string }
 }) {
@@ -49,8 +51,6 @@ export function AdminPanel({
   const [msg, setMsg] = useState("")
   const [busy, setBusy] = useState(false)
   const videoInput = useRef<HTMLInputElement>(null)
-  const imageInput = useRef<HTMLInputElement>(null)
-  const [product, setProduct] = useState("")
   const [subscriberCount, setSubscriberCount] = useState<number | null>(null)
 
   useEffect(() => {
@@ -65,21 +65,17 @@ export function AdminPanel({
     setTimeout(() => setMsg(""), 6000)
   }
 
-  const upload = async (kind: "video" | "image", input: HTMLInputElement | null) => {
+  const upload = async (kind: "video", input: HTMLInputElement | null) => {
     if (!input?.files?.length) {
       report("Choose files first.")
-      return
-    }
-    if (kind === "image" && !product.trim()) {
-      report("Type a product name first. It becomes the card title.")
       return
     }
     setBusy(true)
 
     // Direct browser -> storage upload: no server size limit, media is live instantly.
     if (blobEnabled) {
-      const allowed = kind === "video" ? VIDEO_EXT_LIST : IMAGE_EXT_LIST
-      const folder = kind === "video" ? "portfolio" : `images/${product.trim()}`
+      const allowed = VIDEO_EXT_LIST
+      const folder = "portfolio"
       const saved: string[] = []
       const rejected: string[] = []
       const files = [...input.files]
@@ -119,7 +115,6 @@ export function AdminPanel({
     // Fallback (local development): send through the server route.
     const form = new FormData()
     form.set("kind", kind)
-    if (kind === "image") form.set("product", product.trim())
     for (const f of input.files) form.append("files", f)
     try {
       const res = await fetch("/api/admin/upload", { method: "POST", body: form })
@@ -312,7 +307,7 @@ export function AdminPanel({
 
       <h1 className="mb-2 text-2xl font-semibold">Content admin</h1>
       <p className="mb-8 text-sm text-white/60">
-        Whatever you upload here appears on the website immediately. Video filename = the label shown on the card.
+        Manage the videos, photo portfolios and posts shown on your website. Photo portfolios appear after publishing finishes.
       </p>
 
       {msg && (
@@ -529,38 +524,9 @@ export function AdminPanel({
           </ul>
         </Section>
 
-        <Section
-          title="AI image products"
-          hint="Type the product name (shown on the card), pick its images, upload. Add more images to an existing product by typing the same name."
-        >
-          <div className="flex flex-wrap items-center gap-3">
-            <input
-              value={product}
-              onChange={(e) => setProduct(e.target.value)}
-              list="admin-products"
-              placeholder="Product name"
-              className="w-56 rounded-xl border border-neutral-300 px-4 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
-            />
-            <datalist id="admin-products">
-              {products.map((p) => (
-                <option key={p.name} value={p.name} />
-              ))}
-            </datalist>
-            <input
-              ref={imageInput}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif,image/avif,.jpg,.jpeg,.png,.webp,.gif,.avif"
-              multiple
-              className="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
-            />
-            <button
-              onClick={() => upload("image", imageInput.current)}
-              disabled={busy}
-              className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-            >
-              {busy ? "Working…" : "Upload images"}
-            </button>
-          </div>
+        <PortfolioImagesAdmin products={products} connected={githubConnected} />
+
+        <Section title="Manage photo portfolios" hint="Remove a portfolio from the site. GitHub changes appear after the next site update.">
           <ul className="mt-5 divide-y divide-neutral-200 border-t border-neutral-200">
             {products.map((p) => (
               <li key={p.name} className="flex items-center justify-between gap-3 py-2.5 text-sm">
@@ -572,11 +538,11 @@ export function AdminPanel({
                   disabled={busy}
                   className="shrink-0 text-xs font-semibold text-red-600 hover:underline disabled:opacity-60"
                 >
-                  Delete product
+                  Delete portfolio
                 </button>
               </li>
             ))}
-            {products.length === 0 && <li className="py-2.5 text-sm text-neutral-400">No products yet.</li>}
+            {products.length === 0 && <li className="py-2.5 text-sm text-neutral-400">No photo portfolios yet.</li>}
           </ul>
         </Section>
       </div>

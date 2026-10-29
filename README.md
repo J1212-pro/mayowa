@@ -16,6 +16,18 @@ Local media previews are in `public/video-previews/`, with dimensions in `lib/vi
 
 Run validation and publishing-fallback checks with Node 22.18+ or Node 24: `node --test scripts/test-youtube.mjs scripts/test-youtube-storage.mjs scripts/test-portfolio-links.mjs`.
 
+## Photo portfolios
+
+In `/admin`, use **Photo portfolios**. Enter the portfolio title, choose multiple images or ZIP files, review the thumbnails, then choose **Publish photo portfolio**. Select an existing portfolio name to add more photos. Files in nested ZIP folders are collected into the named portfolio; hidden files and unsupported formats are skipped. Each selection supports up to 100 photos, ZIPs up to 100 MB, and up to 250 MB of extracted originals.
+
+Photos are prepared in the browser at up to 2400 pixels on the longest side, with WebP compression and a 3 MB per-file upload limit. Animated GIFs are retained and must already be under 3 MB. Images receive unique filenames so adding another batch does not replace earlier photos with the same original filenames.
+
+Publishing requires a server-only `GITHUB_TOKEN` with **Contents: read and write** permission for `GITHUB_REPO` (default `J1212-pro/mayowa`). `GITHUB_BRANCH` defaults to `master`. Configure credentials directly in Vercel; never expose them through `NEXT_PUBLIC_` variables. GitHub's Vercel deployment connection alone does not authorize the running admin application to write repository contents.
+
+Each photo is uploaded as an unreferenced Git blob. The final publish request validates signed upload receipts and creates one tree and one commit for the whole batch under `public/images/<portfolio name>/`. Only the final commit updates the branch and triggers a deployment. Concurrent repository changes are preserved with a non-forced branch update and bounded retries. Interrupted uploads leave the live portfolio unchanged, and retries reuse completed upload receipts for up to an hour while the page stays open.
+
+After Vercel finishes deployment, the existing media manifest and portfolio gallery automatically show the named set and its images. Existing Vercel Blob galleries remain visible; new photo portfolios use GitHub storage. Run `npm run test:portfolio` for ZIP, validation, authentication and atomic publishing tests.
+
 ## Getting Started
 
 First, run the development server:
