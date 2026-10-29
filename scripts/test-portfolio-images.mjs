@@ -183,3 +183,15 @@ test("GitHub permission failures and rate limits report actionable errors", asyn
   githubFetch = async () => Response.json({ message: "Secondary rate limit" }, { status: 403 })
   await assert.rejects(github.githubStagePhoto(Buffer.from(png)), /Wait a minute/)
 })
+
+test("publishing trims copied whitespace and treats whitespace-only credentials as missing", async () => {
+  environment.GITHUB_TOKEN = "   "
+  assert.equal(github.hasGithub(), false)
+  environment.GITHUB_TOKEN = "  test-only-token\n"
+  githubFetch = async (_url, init) => {
+    assert.equal(init.headers.Authorization, "Bearer test-only-token")
+    return Response.json({ sha })
+  }
+  assert.equal(await github.githubStagePhoto(Buffer.from(png)), sha)
+  environment.GITHUB_TOKEN = "test-only-token"
+})
