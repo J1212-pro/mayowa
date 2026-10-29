@@ -177,7 +177,9 @@ test("publishing retries branch races using the latest tree without force pushin
 
 test("GitHub permission failures and rate limits report actionable errors", async () => {
   githubFetch = async () => Response.json({ message: "Bad credentials" }, { status: 401 })
-  await assert.rejects(github.githubStagePhoto(Buffer.from(png)), /valid connection with Contents/)
+  await assert.rejects(github.githubStagePhoto(Buffer.from(png)), /401: bad credentials/)
+  githubFetch = async () => Response.json({ message: "Resource not accessible by personal access token" }, { status: 403 })
+  await assert.rejects(github.githubStagePhoto(Buffer.from(png)), /403.*Contents read and write/)
   githubFetch = async () => Response.json({ message: "Secondary rate limit" }, { status: 403 })
   await assert.rejects(github.githubStagePhoto(Buffer.from(png)), /Wait a minute/)
 })

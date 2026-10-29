@@ -2,11 +2,11 @@
 // read-only, so files are committed via the GitHub Contents API instead —
 // each upload/delete triggers a redeploy that ships the new media.
 
-const REPO = process.env.GITHUB_REPO || "J1212-pro/mayowa"
-const BRANCH = process.env.GITHUB_BRANCH || "master"
+const REPO = process.env.GITHUB_REPO?.trim() || "J1212-pro/mayowa"
+const BRANCH = process.env.GITHUB_BRANCH?.trim() || "master"
 
 export function hasGithub(): boolean {
-  return !!process.env.GITHUB_TOKEN
+  return !!process.env.GITHUB_TOKEN?.trim()
 }
 
 /** True when running on Vercel (read-only disk) with a token configured. */
@@ -23,7 +23,7 @@ async function gh(pathname: string, init?: RequestInit): Promise<Response> {
     signal: AbortSignal.timeout(8000),
     ...init,
     headers: {
-      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      Authorization: `Bearer ${process.env.GITHUB_TOKEN?.trim() || ""}`,
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
       ...(init?.headers || {}),
@@ -108,8 +108,14 @@ async function githubJson(pathname: string, init?: RequestInit) {
     if (response.status === 429 || response.headers.get("retry-after") || /rate limit/i.test(String(detail?.message))) {
       throw new Error("GitHub is temporarily limiting uploads. Wait a minute, then try again; your selected photos are still ready.")
     }
-    if (response.status === 401 || response.status === 403) {
-      throw new Error("GitHub publishing needs a valid connection with Contents read and write access to this repository. Your photos have not been published.")
+    if (response.status === 401) {
+      throw new Error("GitHub rejected the saved publishing token (401: bad credentials). The token used by this deployment is invalid, expired or revoked. Your photos have not been published.")
+    }
+    if (response.status === 403) {
+      throw new Error("GitHub denied repository access (403). Check that the saved token is approved for this repository with Contents read and write access. Your photos have not been published.")
+    }
+    if (response.status === 404) {
+      throw new Error(`GitHub could not access ${REPO} (404). Check the repository selected for the publishing token. Your photos have not been published.`)
     }
     throw new Error(`GitHub could not save this portfolio (${response.status}). Try again shortly.`)
   }
