@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client"
+import path from "path"
 import { isAdmin } from "@/lib/admin"
+import { safeName, VIDEO_EXTS, IMAGE_EXTS } from "@/lib/media"
+
+const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v"]
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]
 
 const MAX_VIDEO_BYTES = 300 * 1024 * 1024 // 300 MB
 const MAX_IMAGE_BYTES = 25 * 1024 * 1024 // 25 MB
@@ -24,13 +29,21 @@ export async function POST(request: Request) {
         if (!(await isAdmin())) {
           throw new Error("Not signed in.")
         }
-        const isVideo = pathname.startsWith("portfolio/")
-        const isImage = pathname.startsWith("images/")
-        if (!isVideo && !isImage) {
+        // Only portfolio/<file> or images/<product>/<file>, with safe names and
+        // media extensions, so uploads can't overwrite blog posts, the
+        // subscriber list, or anything else in the store.
+        const parts = pathname.split("/")
+        const isVideo = parts.length === 2 && parts[0] === "portfolio"
+        const isImage = parts.length === 3 && parts[0] === "images"
+        const segmentsOk = parts.slice(1).every((s) => s !== "" && safeName(s) === s)
+        const ext = path.extname(parts[parts.length - 1] || "").toLowerCase()
+        const extOk = isVideo ? VIDEO_EXTS.has(ext) : IMAGE_EXTS.has(ext)
+        if ((!isVideo && !isImage) || !segmentsOk || !extOk) {
           throw new Error("Invalid upload destination.")
         }
         return {
-          allowedContentTypes: isVideo ? ["video/*"] : ["image/*"],
+          // Explicit types only (no SVG, which can carry scripts).
+          allowedContentTypes: isVideo ? VIDEO_TYPES : IMAGE_TYPES,
           maximumSizeInBytes: isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES,
           addRandomSuffix: false,
           allowOverwrite: true,

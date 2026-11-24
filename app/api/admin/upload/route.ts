@@ -3,7 +3,7 @@ import path from "path"
 import { NextResponse } from "next/server"
 import { isAdmin } from "@/lib/admin"
 import { safeName, resolveInside, videosDir, imagesDir, VIDEO_EXTS, IMAGE_EXTS } from "@/lib/media"
-import { useGithubStorage, githubPutFile } from "@/lib/github"
+import { githubStorageEnabled, githubPutFile } from "@/lib/github"
 
 const MAX_VIDEO_BYTES = 300 * 1024 * 1024 // 300 MB
 const MAX_IMAGE_BYTES = 25 * 1024 * 1024 // 25 MB
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No files received." }, { status: 400 })
   }
 
-  const github = useGithubStorage()
+  const github = githubStorageEnabled()
   let product = ""
   let targetDir = ""
   let repoDir: string

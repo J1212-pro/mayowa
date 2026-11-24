@@ -120,8 +120,9 @@ export async function loadProducts(): Promise<Product[]> {
 /** Strip anything dangerous from a user-supplied file or folder name. */
 export function safeName(input: string, maxLen = 80): string {
   const base = path.basename(input) // kills any path traversal
-  const cleaned = base.replace(/[^a-zA-Z0-9 ._()\-]/g, "").replace(/\s+/g, " ").trim()
-  return cleaned.slice(0, maxLen)
+  const cleaned = base.replace(/[^a-zA-Z0-9 ._()\-]/g, "").replace(/\s+/g, " ").trim().slice(0, maxLen)
+  // "." / ".." would point at a parent folder (e.g. via the GitHub API path).
+  return /^\.*$/.test(cleaned) ? "" : cleaned
 }
 
 /** Resolve a child path and guarantee it stays inside the parent directory. */

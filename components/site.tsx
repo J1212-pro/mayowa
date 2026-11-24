@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 
 import { WA_LINK, PHONE, PHONE_DISPLAY, EMAIL, waHref, TIKTOK, TIKTOK_HANDLE, INSTAGRAM, INSTAGRAM_HANDLE } from "@/lib/contact"
 
@@ -51,12 +52,32 @@ export function InstagramIcon({ className = "h-4 w-4" }: { className?: string })
 
 export function Logo() {
   return (
-    <Link href="/" aria-label="Mayowa home" className="flex items-center gap-0.5 font-display text-xl tracking-wide text-white">
-      MAY
-      <span className="mx-1 flex h-7 w-7 items-center justify-center rounded-full bg-brand">
-        <CamIcon className="h-3.5 w-3.5 text-white" />
+    // Mark only at rest; hovering (or keyboard focus) slides "MAY" and "WA" out on either side.
+    <Link
+      href="/"
+      aria-label="Mayowa home"
+      className="group flex items-center font-display text-xl tracking-wide text-white outline-none"
+    >
+      <span
+        aria-hidden="true"
+        className="inline-block max-w-0 translate-x-3 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-500 ease-out group-hover:max-w-[3.5em] group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:max-w-[3.5em] group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none"
+      >
+        MAY
       </span>
-      WA
+      <Image
+        src="/logo-mark.png"
+        alt=""
+        width={287}
+        height={144}
+        priority
+        className="mx-1 h-6 w-auto transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none"
+      />
+      <span
+        aria-hidden="true"
+        className="inline-block max-w-0 -translate-x-3 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-500 ease-out group-hover:max-w-[3em] group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:max-w-[3em] group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none"
+      >
+        WA
+      </span>
     </Link>
   )
 }

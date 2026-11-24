@@ -1,3 +1,4 @@
+import { jsonLd, sanitizeHtml } from "@/lib/sanitize-html"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Nav, Footer, WaFloat, TikTokIcon, InstagramIcon } from "@/components/site"
@@ -60,7 +61,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="flex-1">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(postSchema(post)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(postSchema(post)) }} />
       <Nav />
 
       <article className="mx-auto max-w-3xl px-6 py-16">
@@ -72,7 +73,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         <div
           className="prose-mayowa mt-8 space-y-5 leading-relaxed text-white/80 [&_a]:text-brand [&_a]:underline [&_b]:text-white [&_blockquote]:border-l-2 [&_blockquote]:border-brand [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-10 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-white [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-white [&_li]:ml-5 [&_ol]:list-decimal [&_ol]:space-y-2 [&_strong]:text-white [&_ul]:list-disc [&_ul]:space-y-2"
-          dangerouslySetInnerHTML={{ __html: post.html }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.html) }}
         />
 
         {/* Keep reading — internal links */}

@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto"
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { generatePost, hasAnthropic } from "@/lib/blog-generator"
@@ -6,9 +7,16 @@ export const maxDuration = 300
 
 // Called by Vercel Cron once a week (see vercel.json). Vercel sends
 // "Authorization: Bearer <CRON_SECRET>" when the CRON_SECRET env var is set.
+// Fails closed: without CRON_SECRET nobody (not even the cron) can trigger it,
+// so strangers can never run up AI costs or publish posts.
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET
-  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!secret) {
+    return NextResponse.json({ error: "CRON_SECRET is not configured. Auto-blog is paused." }, { status: 503 })
+  }
+  const given = Buffer.from(req.headers.get("authorization") || "")
+  const expected = Buffer.from(`Bearer ${secret}`)
+  if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 })
   }
 

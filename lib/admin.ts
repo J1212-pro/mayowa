@@ -17,8 +17,9 @@ export function makeToken(): string {
 export function verifyToken(token: string | undefined): boolean {
   if (!token || !secret()) return false
   const [ts, sig] = token.split(".")
-  if (!ts || !sig) return false
-  if (Date.now() - Number(ts) > SESSION_HOURS * 60 * 60 * 1000) return false
+  if (!/^\d{1,16}$/.test(ts) || !/^[0-9a-f]{64}$/.test(sig)) return false
+  const age = Date.now() - Number(ts)
+  if (age < 0 || age > SESSION_HOURS * 60 * 60 * 1000) return false
   const expected = createHmac("sha256", secret()).update(ts).digest("hex")
   try {
     return timingSafeEqual(Buffer.from(sig), Buffer.from(expected))

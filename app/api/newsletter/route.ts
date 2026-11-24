@@ -2,12 +2,20 @@ import { NextResponse } from "next/server"
 import { addSubscriber } from "@/lib/newsletter"
 import { EMAIL } from "@/lib/contact"
 import { hasZoho, sendViaZoho } from "@/lib/email"
+import { clientIp, hit, isLimited } from "@/lib/rate-limit"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 export async function POST(req: Request) {
+  // Stop bots from flooding the list or the inbox: 5 signups per IP per hour.
+  const ip = clientIp(req)
+  if (isLimited("newsletter", ip, 5, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: "Too many signups from your connection. Try again later." }, { status: 429 })
+  }
+  hit("newsletter", ip, 60 * 60 * 1000)
+
   const body = await req.json().catch(() => ({}))
-  const name = typeof body?.name === "string" ? body.name.trim() : ""
+  const name = typeof body?.name === "string" ? body.name.replace(/[\r\n\t]+/g, " ").trim() : ""
   const email = typeof body?.email === "string" ? body.email.trim() : ""
 
   if (!name || name.length > 80) {

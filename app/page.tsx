@@ -1,3 +1,4 @@
+import { jsonLd } from "@/lib/sanitize-html"
 import Link from "next/link"
 import { ShaderBackground } from "@/components/ui/shader-background"
 import { HeroCharacter } from "@/components/hero-character"
@@ -105,7 +106,7 @@ export default async function Home() {
   const latestPosts = posts.slice(0, 2)
   return (
     <div className="flex-1">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(organizationSchema) }} />
       <Nav />
 
       {/* Lightweight CSS hero background */}

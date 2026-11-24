@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { isAdmin } from "@/lib/admin"
 import { safeName, resolveInside, videosDir, imagesDir, hasBlobStore, listBlobs } from "@/lib/media"
-import { useGithubStorage as githubStorageEnabled, githubDeleteFile, githubDeleteDir } from "@/lib/github"
+import { githubStorageEnabled, githubDeleteFile, githubDeleteDir } from "@/lib/github"
 import { portfolioName } from "@/lib/portfolio-images"
 
 /** Delete matching media from the Blob store. Returns true if anything was removed. */

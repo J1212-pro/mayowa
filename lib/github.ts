@@ -10,7 +10,7 @@ export function hasGithub(): boolean {
 }
 
 /** True when running on Vercel (read-only disk) with a token configured. */
-export function useGithubStorage(): boolean {
+export function githubStorageEnabled(): boolean {
   return !!process.env.VERCEL && hasGithub()
 }
 

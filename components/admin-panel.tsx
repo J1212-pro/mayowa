@@ -76,19 +76,25 @@ export function AdminPanel({
     if (blobEnabled) {
       const allowed = VIDEO_EXT_LIST
       const folder = "portfolio"
+      // Same cleaning rule as the server's safeName(), so names always pass its check.
+      const clean = (s: string, max = 80) => {
+        const c = (s.split(/[\\/]/).pop() || "").replace(/[^a-zA-Z0-9 ._()\-]/g, "").replace(/\s+/g, " ").trim().slice(0, max)
+        return /^\.*$/.test(c) ? "" : c
+      }
       const saved: string[] = []
       const rejected: string[] = []
       const files = [...input.files]
       try {
         for (let i = 0; i < files.length; i++) {
           const f = files[i]
-          if (!extOk(f.name, allowed)) {
+          const fileName = clean(f.name)
+          if (!fileName || !extOk(fileName, allowed)) {
             rejected.push(`${f.name} (type not allowed)`)
             continue
           }
           setMsg(`Uploading ${i + 1} of ${files.length}: ${f.name}…`)
           try {
-            await blobUpload(`${folder}/${f.name}`, f, {
+            await blobUpload(`${folder}/${fileName}`, f, {
               access: "public",
               handleUploadUrl: "/api/admin/blob-upload",
             })
