@@ -25,7 +25,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Enter a valid email." }, { status: 400 })
   }
 
-  const { added, total } = await addSubscriber(name, email)
+  // If storage is down (e.g. the Blob store is suspended), still accept the
+  // signup: the email notification below delivers it to the inbox.
+  let added = true
+  let total = 0
+  try {
+    ;({ added, total } = await addSubscriber(name, email))
+  } catch (err) {
+    console.error("Newsletter storage failed; relying on email notification:", err)
+  }
 
   // Best-effort inbox notification — the signup is already stored above,
   // so a failure here never loses the subscriber.
