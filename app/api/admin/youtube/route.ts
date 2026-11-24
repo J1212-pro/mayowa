@@ -47,6 +47,8 @@ export async function POST(req: Request) {
     console.error("Could not save YouTube video:", err)
     return NextResponse.json({
       error: "Automatic publishing is unavailable. Continue on GitHub and choose Commit changes to publish this video. Your site updates after deployment finishes.",
+      // Admin-only; storage errors are already stripped of tokens and URLs.
+      detail: err instanceof YouTubeStorageError ? err.message.replace(/^Your link could not be published\.\s*/, "") : undefined,
       publishUrl: githubPublishUrl(video, process.env.GITHUB_REPO || "J1212-pro/mayowa", process.env.GITHUB_BRANCH || "master"),
       video,
     }, { status: 503 })

@@ -37,7 +37,8 @@ export function YouTubeAdmin({ videos, publishing }: { videos: YouTubeVideo[]; p
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         if (typeof data.publishUrl === "string" && data.publishUrl.startsWith("https://github.com/")) setPublishUrl(data.publishUrl)
-        throw new Error(data.error || "Could not save the video. Please try again.")
+        const reason = typeof data.detail === "string" && data.detail ? ` (Reason: ${data.detail})` : ""
+        throw new Error((data.error || "Could not save the video. Please try again.") + reason)
       }
       setUrl("")
       setTitle("")
